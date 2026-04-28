@@ -33,6 +33,7 @@ const JS_FILES = [
   "js/integrity.js",
   "js/state.js",
   "js/quiz.js",
+  "js/fx.js",
   "js/map.js",
   "js/app.js"
 ];

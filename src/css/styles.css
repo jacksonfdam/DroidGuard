@@ -447,3 +447,169 @@ body::before {
 .hidden { display: none !important; }
 .center { text-align: center; }
 .muted { color: var(--text-dim); }
+
+/* ─────────────────────────────────────────────────────────────────
+ * CRT + GLITCH FX
+ * Tunable via CSS custom properties driven by JS (DG_FX). Every
+ * page load picks a random preset; level transitions trigger glitch.
+ * ────────────────────────────────────────────────────────────── */
+:root {
+  --crt-scan-opacity: 0.40;
+  --crt-vignette-opacity: 0.55;
+  --crt-flicker-strength: 0.04;
+  --crt-rgb-shift: 0.6px;
+}
+
+/* Scanlines — fine repeating horizontal lines. Sits ABOVE everything. */
+html::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, var(--crt-scan-opacity)) 0,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 3px,
+      rgba(0, 0, 0, calc(var(--crt-scan-opacity) * 0.6)) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 255, 136, 0.015) 0,
+      transparent 2px,
+      transparent 4px,
+      rgba(0, 212, 255, 0.015) 6px
+    );
+  mix-blend-mode: multiply;
+  animation: crtScroll 9s linear infinite;
+}
+@keyframes crtScroll {
+  0%   { background-position: 0 0,    0 0; }
+  100% { background-position: 0 100vh, 0 0; }
+}
+
+/* Vignette — radial fade to dark at the edges. */
+html::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgba(0, 0, 0, var(--crt-vignette-opacity)) 115%
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Subtle ambient flicker on the whole app — just enough to feel CRT. */
+@keyframes crtFlicker {
+  0%, 100% { opacity: 1; }
+  18%      { opacity: calc(1 - var(--crt-flicker-strength) * 0.5); }
+  19%      { opacity: 1; }
+  43%      { opacity: calc(1 - var(--crt-flicker-strength)); }
+  44%      { opacity: 1; }
+  73%      { opacity: calc(1 - var(--crt-flicker-strength) * 0.7); }
+  74%      { opacity: 1; }
+}
+#app, [id] > main { animation: crtFlicker 7.3s steps(40) infinite; }
+
+/* Soft chromatic aberration on titles & big numbers. */
+.title, .score__points .num, .map-node__num {
+  text-shadow:
+    var(--crt-rgb-shift) 0 rgba(255, 85, 119, 0.45),
+    calc(var(--crt-rgb-shift) * -1) 0 rgba(0, 212, 255, 0.45);
+}
+
+/* ── GLITCH (transient, applied via JS) ──────────────────────────── */
+@keyframes glitchShake {
+  0%   { transform: translate(0, 0);   filter: none; }
+  10%  { transform: translate(-3px, 1px); filter: hue-rotate(20deg) saturate(1.4); }
+  20%  { transform: translate(3px, -2px); filter: hue-rotate(-25deg) saturate(0.8); }
+  30%  { transform: translate(-2px, -1px); filter: hue-rotate(40deg) brightness(1.2); }
+  40%  { transform: translate(2px, 2px); filter: hue-rotate(-10deg); }
+  50%  { transform: translate(-3px, 0);  filter: hue-rotate(60deg) contrast(1.3); }
+  60%  { transform: translate(0, 2px);   filter: none; }
+  70%  { transform: translate(2px, -3px); filter: hue-rotate(-40deg) saturate(1.6); }
+  80%  { transform: translate(-1px, 1px); filter: brightness(1.3); }
+  100% { transform: translate(0, 0);   filter: none; }
+}
+@keyframes glitchClipA {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  10%      { clip-path: inset(15% 0 60% 0); }
+  20%      { clip-path: inset(45% 0 35% 0); }
+  30%      { clip-path: inset(75% 0 5%  0); }
+  40%      { clip-path: inset(25% 0 55% 0); }
+  50%      { clip-path: inset(60% 0 20% 0); }
+  60%      { clip-path: inset(5%  0 85% 0); }
+  70%      { clip-path: inset(35% 0 40% 0); }
+  80%      { clip-path: inset(55% 0 15% 0); }
+}
+.is-glitch {
+  animation: glitchShake 600ms steps(20) 1 both;
+  position: relative;
+  isolation: isolate;
+}
+.is-glitch::before,
+.is-glitch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: inherit;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+.is-glitch::before {
+  background: linear-gradient(180deg, transparent, rgba(255, 85, 119, 0.10), transparent);
+  animation: glitchClipA 600ms steps(20) 1;
+  transform: translate(2px, 0);
+}
+.is-glitch::after {
+  background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.10), transparent);
+  animation: glitchClipA 600ms steps(20) reverse 1;
+  transform: translate(-2px, 0);
+}
+
+/* Boot bloom — one-time RGB split flash applied to <html> on load. */
+@keyframes bootBloom {
+  0%  { filter: blur(8px) saturate(2) hue-rotate(20deg); opacity: 0.2; }
+  40% { filter: blur(2px) saturate(1.6) hue-rotate(-10deg); opacity: 0.85; }
+  70% { filter: blur(0)   saturate(1.2); opacity: 1; }
+  100%{ filter: none; opacity: 1; }
+}
+.is-boot { animation: bootBloom 900ms cubic-bezier(.2,.7,.2,1) 1 both; }
+
+/* Random noise burst — sparse fixed-position div appended by JS. */
+@keyframes noiseFade {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.18; }
+  100% { opacity: 0; }
+}
+.is-noise {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9996;
+  background-image:
+    radial-gradient(rgba(255,255,255,.45) 1px, transparent 1.5px),
+    radial-gradient(rgba(0,255,136,.30) 1px, transparent 1.5px),
+    radial-gradient(rgba(255,85,119,.30) 1px, transparent 1.5px);
+  background-size: 3px 3px, 5px 5px, 7px 7px;
+  background-position: 0 0, 1px 1px, 2px 2px;
+  mix-blend-mode: screen;
+  animation: noiseFade 350ms steps(8) 1 both;
+}
+
+/* Honor accessibility preferences — kill all FX motion if requested. */
+@media (prefers-reduced-motion: reduce) {
+  html::before { animation: none; }
+  #app, [id] > main { animation: none; }
+  .is-glitch, .is-boot, .is-noise { animation: none; }
+  :root {
+    --crt-scan-opacity: 0.18;
+    --crt-vignette-opacity: 0.30;
+    --crt-flicker-strength: 0;
+    --crt-rgb-shift: 0;
+  }
+}

@@ -45,10 +45,20 @@ window.DG_APP = (function () {
     }, 2200);
   }
 
+  // ---------- View transitions ----------
+  // Every view swap is decorated with a brief glitch + noise burst.
+  function fxTransition() {
+    if (window.DG_FX) {
+      DG_FX.glitch(view, 500);
+      DG_FX.noise(280);
+    }
+  }
+
   // ---------- Views ----------
   function renderMap() {
     DG_MAP.render(view);
     refreshHud();
+    fxTransition();
   }
 
   function renderCredits() {
@@ -78,6 +88,8 @@ window.DG_APP = (function () {
         </div>
       </section>
     `;
+
+    fxTransition();
 
     document.getElementById("btnReset").addEventListener("click", () => {
       openModal(`
@@ -134,6 +146,9 @@ window.DG_APP = (function () {
         <button class="btn btn--primary" id="btnStartQuiz">I'm ready 🚀</button>
       </div>
     `);
+
+    // Light glitch on the modal panel — "tuning the channel"
+    if (window.DG_FX) DG_FX.glitch(modalPanel, 420);
 
     document.getElementById("btnStartQuiz").addEventListener("click", () => {
       closeModal();
@@ -270,6 +285,14 @@ window.DG_APP = (function () {
         </section>
       `;
 
+      // Result reveal: stronger glitch + double noise burst.
+      if (window.DG_FX) {
+        DG_FX.glitch(view, 800);
+        DG_FX.noise(420);
+        setTimeout(() => DG_FX.noise(220), 260);
+        if (result.levelUp) setTimeout(() => DG_FX.glitch(document.body, 500), 600);
+      }
+
       const target = points;
       const numEl = document.getElementById("ptsNum");
       let cur = 0;
@@ -287,7 +310,10 @@ window.DG_APP = (function () {
       });
     }
 
+    // Quiz start — channel-tune effect on the first question.
+    if (window.DG_FX) DG_FX.noise(220);
     renderQuestion();
+    if (window.DG_FX) DG_FX.glitch(view, 500);
   }
 
   // ---------- Boot ----------
