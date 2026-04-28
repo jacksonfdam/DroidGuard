@@ -8,6 +8,9 @@
   <title>DroidGuard Quest</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="stylesheet" href="css/styles.css" />
+  <!-- Loaded synchronously and as early as possible so console blocking
+       and tamper checks are in place before any other code runs. -->
+  <script src="js/anti-tamper.js"></script>
 </head>
 <body>
   <div id="app">

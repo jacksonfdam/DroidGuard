@@ -43,6 +43,9 @@ window.DG_STATE = (function () {
   }
 
   function save(s) {
+    // Refuse to persist if the runtime detected tampering — keeps a clean
+    // baseline once the user reloads in a clean profile.
+    if (window.__DG_TAMPER) return;
     try { localStorage.setItem(KEY, window.DG_INTEGRITY.pack(s)); }
     catch (e) { /* ignore */ }
   }
