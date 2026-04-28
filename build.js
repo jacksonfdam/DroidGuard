@@ -75,6 +75,109 @@ const OBF_LIGHT = {
 
 const HEAVY_TARGETS = new Set(["js/data.js", "js/integrity.js", "js/state.js", "js/quiz.js"]);
 
+/* ── CSS class / ID rename ───────────────────────────────────────────
+ * Builds a deterministic map { 'class:hud': '_a', 'id:view': '_b', ... }
+ * by scanning the source CSS and HTML, then applies it to:
+ *   - CSS selectors (.foo, #bar)
+ *   - HTML attributes (id=, class=)
+ *   - JS DOM API calls (getElementById, querySelector*, classList.*)
+ *   - Template-literal HTML inside JS (class="…", id="…")
+ *   - SVG/CSS url(#id) references
+ *
+ * Rationale: the obfuscator alone leaves human-readable class names
+ * intact in the rendered HTML and stylesheet. Renaming them strips
+ * one more layer of meaning for anyone inspecting the live DOM.
+ */
+const RENAME_PROTECT = new Set([
+  // State classes assembled at runtime via string concatenation
+  // (`is-${st}`, `"is-" + kind`, ternaries inside template literals).
+  // Static parts of those templates (e.g., 'map-node', 'toast') are still
+  // renamed; only the dynamic suffix needs to stay readable on both sides.
+  "is-locked", "is-current", "is-done",
+  "is-shown", "is-open",
+  "is-correct", "is-wrong",
+  "is-success", "is-error",
+  "on"
+]);
+
+function alphaIdx(n) {
+  let s = "";
+  do { s = String.fromCharCode(97 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0);
+  return s;
+}
+
+function buildRenameMap(css, html) {
+  const seen = new Set();
+  const order = [];
+  const add = (kind, name) => {
+    if (RENAME_PROTECT.has(name)) return;
+    const key = kind + ":" + name;
+    if (seen.has(key)) return;
+    seen.add(key); order.push(key);
+  };
+  // CSS: class and id selectors
+  for (const m of css.matchAll(/\.([a-zA-Z_][\w-]*)/g))  add("class", m[1]);
+  for (const m of css.matchAll(/#([a-zA-Z_][\w-]*)/g))   add("id",    m[1]);
+  // HTML attribute values
+  for (const m of html.matchAll(/\bid=("|')([^"']+)\1/g))    add("id", m[2]);
+  for (const m of html.matchAll(/\bclass=("|')([^"']+)\1/g))
+    for (const c of m[2].split(/\s+/)) if (c) add("class", c);
+
+  const map = new Map();
+  let i = 0;
+  for (const key of order) map.set(key, "_" + alphaIdx(i++));
+  return map;
+}
+
+function renameCss(css, map) {
+  return css
+    .replace(/\.([a-zA-Z_][\w-]*)/g, (m, n) => "." + (map.get("class:" + n) || n))
+    .replace(/#([a-zA-Z_][\w-]*)(?=[\s,{:.>+~()\[\],#]|$)/g, (m, n) => "#" + (map.get("id:" + n) || n));
+}
+
+function renameHtmlAttrs(s, map) {
+  s = s.replace(/\b(class)=("|')([^"']*)\2/g, (m, attr, q, val) => {
+    const out = val.split(/\s+/).map(t => t ? (map.get("class:" + t) || t) : t).join(" ");
+    return attr + "=" + q + out + q;
+  });
+  s = s.replace(/\b(id)=("|')([^"']+)\2/g, (m, attr, q, val) => {
+    return attr + "=" + q + (map.get("id:" + val) || val) + q;
+  });
+  return s;
+}
+
+function renameJs(js, map) {
+  // 1. getElementById("foo")
+  js = js.replace(/getElementById\((["'`])([^"'`]+)\1\)/g,
+    (m, q, v) => "getElementById(" + q + (map.get("id:" + v) || v) + q + ")");
+  // 2. querySelector / querySelectorAll(".foo, #bar")
+  js = js.replace(/querySelector(?:All)?\((["'`])([^"'`]+)\1\)/g, (m, q, sel) => {
+    const nsel = sel
+      .replace(/\.([a-zA-Z_][\w-]*)/g, (_m, n) => "." + (map.get("class:" + n) || n))
+      .replace(/#([a-zA-Z_][\w-]*)/g, (_m, n) => "#" + (map.get("id:" + n) || n));
+    return m.replace(sel, nsel);
+  });
+  // 3. element.classList.{add,remove,toggle,contains,replace}("foo", "bar", …)
+  js = js.replace(/\.classList\.(add|remove|toggle|contains|replace)\(([^)]*)\)/g, (m, fn, args) => {
+    const n = args.replace(/(["'`])([^"'`]+)\1/g, (_m, q, v) => {
+      const tokens = v.split(/\s+/).map(t => t ? (map.get("class:" + t) || t) : t).join(" ");
+      return q + tokens + q;
+    });
+    return ".classList." + fn + "(" + n + ")";
+  });
+  // 4. .className = "foo bar" / .className+= "..."
+  js = js.replace(/\.className(\s*[+]?=\s*)(["'`])([^"'`]*)\2/g, (m, op, q, v) => {
+    const tokens = v.split(/\s+/).map(t => t ? (map.get("class:" + t) || t) : t).join(" ");
+    return ".className" + op + q + tokens + q;
+  });
+  // 5. Template-literal HTML attributes: class="…" / id="…" inside JS strings
+  js = renameHtmlAttrs(js, map);
+  // 6. SVG/CSS url(#id) references that may appear inside JS template literals
+  js = js.replace(/url\(#([a-zA-Z_][\w-]*)\)/g, (m, n) => "url(#" + (map.get("id:" + n) || n) + ")");
+  // 7. data-close / [data-close] etc. — leave untouched (not in our map)
+  return js;
+}
+
 /* ── filesystem helpers ──────────────────────────────────────────── */
 function rmrf(p) {
   if (!fs.existsSync(p)) return;
@@ -107,8 +210,11 @@ function fmtSize(bytes) {
 }
 
 /* ── stage builders ──────────────────────────────────────────────── */
+let RENAME_MAP = new Map();
+
 async function buildJs(rel) {
-  const src = fs.readFileSync(path.join(SRC, rel), "utf8");
+  let src = fs.readFileSync(path.join(SRC, rel), "utf8");
+  src = renameJs(src, RENAME_MAP);
   const minified = await terserMinify(src, {
     compress: { passes: 2, drop_console: true, drop_debugger: false /* anti-tamper relies on it */ },
     mangle: true,
@@ -131,7 +237,8 @@ async function buildJs(rel) {
 }
 
 async function buildHtml() {
-  const src = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
+  let src = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
+  src = renameHtmlAttrs(src, RENAME_MAP);
   const min = await htmlMinify(src, {
     collapseWhitespace: true,
     collapseInlineTagWhitespace: true,
@@ -160,7 +267,8 @@ async function buildHtml() {
 }
 
 function buildCss() {
-  const src = fs.readFileSync(path.join(SRC, "css/styles.css"), "utf8");
+  let src = fs.readFileSync(path.join(SRC, "css/styles.css"), "utf8");
+  src = renameCss(src, RENAME_MAP);
   const out = csso.minify(src, { restructure: true }).css;
   const outPath = path.join(OUT, "css/styles.css");
   ensureDir(path.dirname(outPath));
@@ -173,6 +281,12 @@ async function main() {
   console.log("🛡️  DroidGuard Quest — building public/");
   rmrf(OUT);
   ensureDir(OUT);
+
+  // Build the rename map FIRST so every stage applies a consistent mapping.
+  const cssSrc  = fs.readFileSync(path.join(SRC, "css/styles.css"), "utf8");
+  const htmlSrc = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
+  RENAME_MAP = buildRenameMap(cssSrc, htmlSrc);
+  console.log("  rename map: " + RENAME_MAP.size + " classes/IDs aliased");
 
   const reports = [];
   for (const f of JS_FILES) reports.push(await buildJs(f));
