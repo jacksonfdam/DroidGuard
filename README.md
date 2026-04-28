@@ -31,26 +31,59 @@ Scoring: 5/5 = ⭐⭐⭐⭐⭐ + 500 XP, plus a badge per result tier. A streak 
 
 ```bash
 npm install
-npm start            # http://localhost:3000
+npm run dev          # http://localhost:3000  (source, no minify)
+npm run build        # writes ./dist
+npm run preview      # serves the built bundle
 ```
 
-The Express server (`server.js`) serves the SPA from the project root and auto-mounts every file under `api/` as a route at `/api/<filename>`.
+The Express server (`server.js`) serves the SPA from the project root and auto-mounts every file under `api/` as a route at `/api/<filename>`. It applies the same security headers as `vercel.json` so local QA mirrors production.
+
+---
+
+## 🏗️ Build pipeline
+
+`npm run build` produces a hardened static bundle in `dist/`:
+
+| Stage | Tool | Notes |
+|-------|------|-------|
+| JS minify | `terser` | drops `console.*`, mangles names |
+| JS obfuscate | `javascript-obfuscator` | heavy profile (string-array, control-flow flattening, self-defending) on the files that hold answer keys: `data`, `integrity`, `state`, `quiz`. Light profile elsewhere. |
+| HTML minify | `html-minifier-terser` | collapses whitespace, minifies inline CSS/JS |
+| CSS minify | `csso` | restructured, compressed |
+| Assets | (verbatim copy) | `assets/`, `api/`, `vercel.json` |
+
+Hidden files (`.DS_Store`, dotfiles) never ship.
+
+---
+
+## 🛡️ Anti-tamper layer
+
+The app is free and educational. To deter casual cheating without claiming bulletproof protection, the bundle ships a small defensive layer:
+
+- **State integrity** (`js/integrity.js`): every save is XOR-masked with a baked-in salt, stamped with an FNV-1a checksum and base64-encoded. Hand-edits via the browser's storage editor break either layer and the app silently resets. Value bounds are enforced on load (level 1..10, stars 0..5, points 0..500 per level).
+- **Console blocking** (`js/anti-tamper.js`, production only): `console.{log,info,warn,error,debug,trace,table,...}` are replaced with no-ops via `Object.defineProperty` (writable + configurable false).
+- **Debugger trap**: a 1.5 s `setInterval` runs a `debugger;` statement so step-through in DevTools becomes painful.
+- **DevTools heuristics**: window outer/inner-size delta + the `console.log` toString-getter trick.
+- **Native-toString check**: detects Frida-style monkey-patches by verifying that built-ins still serialize to `[native code]`.
+- **Userscript/extension scan**: looks for `GM_*`, `unsafeWindow`, dataset markers and `chrome-extension://` script srcs.
+
+On any signal, the runtime sets `window.__DG_TAMPER`, renders a sticky banner and `state.save()` refuses to persist further changes.
+
+> Localhost and `127.*` hosts skip these checks so dev DX stays normal.
 
 ---
 
 ## ☁️ Deploy to Vercel
 
-The project is Vercel-ready in two compatible ways:
-
-**As a static site (default):** `vercel.json` declares headers, caching and SPA rewrites. The files under `api/` are auto-detected as serverless functions.
-
-**As a Node server:** the same `server.js` exports an Express app and starts a listener locally. It mirrors the platform behavior: identical security headers, same routing logic. Useful for local QA before deploy.
+`vercel.json` already wires `buildCommand: npm run build` and `outputDirectory: dist`, so Vercel runs the full pipeline on every deploy and serves the obfuscated bundle. The files under `api/` are auto-detected as serverless functions.
 
 ```bash
 npm i -g vercel
 vercel             # preview
 vercel --prod      # production
 ```
+
+For local QA before deploy: `npm run build && npm run preview`.
 
 ---
 
@@ -65,11 +98,14 @@ DroidGuard Quest/
 ├── css/
 │   └── styles.css             # dark / neon theme
 ├── js/
-│   ├── data.js                # 10 levels + question pools
-│   ├── state.js               # progression (localStorage)
+│   ├── anti-tamper.js         # console block, devtools/Frida/userscript checks
+│   ├── data.js                # 10 levels + 121 questions
+│   ├── integrity.js           # XOR + FNV-1a wrapper for localStorage
+│   ├── state.js               # progression with integrity validation
 │   ├── quiz.js                # quiz logic & scoring
 │   ├── map.js                 # winding SVG path map
 │   └── app.js                 # views, modals, toast
+├── build.js                   # minify + obfuscate pipeline -> dist/
 ├── server.js                  # Express dev server (Vercel-compatible)
 ├── index.html
 ├── package.json
