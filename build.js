@@ -1,14 +1,16 @@
 /**
  * DroidGuard Quest — production build pipeline.
  *
- * Reads source from the project root and writes a minified + obfuscated
- * static bundle to ./dist, ready to be served by Vercel (or any CDN).
+ * Reads source from ./src and writes a minified + obfuscated static
+ * bundle to ./public, which is the only directory the local server
+ * (and Vercel) will ever serve.
  *
  *   - JS         : terser minify  -> javascript-obfuscator (heavy on data.js)
- *   - HTML       : html-minifier-terser
- *   - CSS        : csso
- *   - assets     : copied verbatim
+ *   - HTML       : html-minifier-terser, aggressive options
+ *   - CSS        : csso (with restructure)
+ *   - assets     : copied verbatim from src/assets
  *   - api/       : copied verbatim (Vercel serverless functions)
+ *   - vercel.json: copied to public/ root
  *
  * Run with:  npm run build
  */
@@ -22,7 +24,8 @@ const { minify: htmlMinify } = require("html-minifier-terser");
 const csso = require("csso");
 
 const ROOT = __dirname;
-const OUT = path.join(ROOT, "dist");
+const SRC = path.join(ROOT, "src");
+const OUT = path.join(ROOT, "public");
 
 const JS_FILES = [
   "js/anti-tamper.js",
@@ -33,8 +36,12 @@ const JS_FILES = [
   "js/map.js",
   "js/app.js"
 ];
-const COPY_DIRS = ["assets", "api"];
-const COPY_FILES = ["vercel.json"];
+const COPY_DIRS = [
+  { src: path.join(SRC, "assets"), dst: path.join(OUT, "assets") },
+  { src: path.join(ROOT, "api"),   dst: path.join(OUT, "api") }
+];
+
+const SKIP_NAMES = new Set([".DS_Store", "Thumbs.db"]);
 
 /** Heavy obfuscation profile — used for files that hold answer keys. */
 const OBF_HEAVY = {
@@ -68,6 +75,7 @@ const OBF_LIGHT = {
 
 const HEAVY_TARGETS = new Set(["js/data.js", "js/integrity.js", "js/state.js", "js/quiz.js"]);
 
+/* ── filesystem helpers ──────────────────────────────────────────── */
 function rmrf(p) {
   if (!fs.existsSync(p)) return;
   for (const entry of fs.readdirSync(p, { withFileTypes: true })) {
@@ -78,11 +86,7 @@ function rmrf(p) {
   fs.rmdirSync(p);
 }
 
-function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
-}
-
-const SKIP_NAMES = new Set([".DS_Store", "Thumbs.db"]);
+function ensureDir(dir) { fs.mkdirSync(dir, { recursive: true }); }
 
 function copyDir(src, dst) {
   if (!fs.existsSync(src)) return;
@@ -102,8 +106,9 @@ function fmtSize(bytes) {
   return (bytes / 1024 / 1024).toFixed(2) + " MB";
 }
 
+/* ── stage builders ──────────────────────────────────────────────── */
 async function buildJs(rel) {
-  const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
+  const src = fs.readFileSync(path.join(SRC, rel), "utf8");
   const minified = await terserMinify(src, {
     compress: { passes: 2, drop_console: true, drop_debugger: false /* anti-tamper relies on it */ },
     mangle: true,
@@ -121,18 +126,27 @@ async function buildJs(rel) {
 }
 
 async function buildHtml() {
-  const src = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const src = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
   const min = await htmlMinify(src, {
     collapseWhitespace: true,
+    collapseInlineTagWhitespace: true,
+    conservativeCollapse: false,
     removeComments: true,
     removeRedundantAttributes: true,
     removeScriptTypeAttributes: true,
     removeStyleLinkTypeAttributes: true,
+    removeEmptyAttributes: true,
+    removeOptionalTags: true,
+    collapseBooleanAttributes: true,
+    removeAttributeQuotes: true,
+    useShortDoctype: true,
     minifyCSS: true,
     minifyJS: true,
+    minifyURLs: true,
     decodeEntities: true,
     sortAttributes: true,
-    sortClassName: true
+    sortClassName: true,
+    continueOnParseError: true
   });
   const out = path.join(OUT, "index.html");
   ensureDir(path.dirname(out));
@@ -141,7 +155,7 @@ async function buildHtml() {
 }
 
 function buildCss() {
-  const src = fs.readFileSync(path.join(ROOT, "css/styles.css"), "utf8");
+  const src = fs.readFileSync(path.join(SRC, "css/styles.css"), "utf8");
   const out = csso.minify(src, { restructure: true }).css;
   const outPath = path.join(OUT, "css/styles.css");
   ensureDir(path.dirname(outPath));
@@ -151,7 +165,7 @@ function buildCss() {
 
 async function main() {
   const t0 = Date.now();
-  console.log("🛡️  DroidGuard Quest — building dist/");
+  console.log("🛡️  DroidGuard Quest — building public/");
   rmrf(OUT);
   ensureDir(OUT);
 
@@ -160,11 +174,8 @@ async function main() {
   reports.push(buildCss());
   reports.push(await buildHtml());
 
-  for (const dir of COPY_DIRS) copyDir(path.join(ROOT, dir), path.join(OUT, dir));
-  for (const file of COPY_FILES) {
-    const src = path.join(ROOT, file);
-    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT, file));
-  }
+  for (const { src, dst } of COPY_DIRS) copyDir(src, dst);
+  // vercel.json hooks at the root, not inside public/, so we don't copy it.
 
   let srcSum = 0, outSum = 0;
   for (const r of reports) { srcSum += r.srcSize; outSum += r.outSize; }

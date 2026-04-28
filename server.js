@@ -1,14 +1,19 @@
 /**
- * DroidGuard Quest — Local development server.
+ * DroidGuard Quest — local server.
  *
- * Vercel-compatible Express app:
- *   - serves static SPA from project root (index.html, /css, /js, /assets)
- *   - mounts /api routes from ./api/* serverless-style handlers
- *   - applies the same security headers declared in vercel.json
+ * Serves the production bundle from ./public exclusively. Source under
+ * ./src is never reachable through this process — clients only see the
+ * minified, obfuscated artifacts produced by `npm run build`.
  *
- * On Vercel, the static files are served by the platform and each file
- * inside /api/ is deployed as its own serverless function. This server
- * mirrors that behavior locally (`npm start`).
+ * Vercel-compatible:
+ *   - same security headers as vercel.json
+ *   - files under ./api are auto-mounted at /api/<filename> and behave
+ *     like Vercel serverless functions
+ *
+ * Bootstrap:
+ *   npm install
+ *   npm run build      (creates ./public)
+ *   npm start          (serves ./public on http://localhost:3000)
  */
 
 const express = require("express");
@@ -17,10 +22,16 @@ const path = require("path");
 const fs = require("fs");
 
 const ROOT = __dirname;
+const PUBLIC_DIR = path.join(ROOT, "public");
+const API_DIR = path.join(ROOT, "api");
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const STATIC_DIRS = ["css", "js", "assets"];
-const STATIC_FILES = ["index.html", "favicon.ico", "robots.txt"];
 const STATIC_MAX_AGE = process.env.NODE_ENV === "production" ? "1y" : 0;
+
+if (!fs.existsSync(PUBLIC_DIR) || !fs.existsSync(path.join(PUBLIC_DIR, "index.html"))) {
+  console.error("✗ ./public is missing or empty.");
+  console.error("  Run `npm run build` before `npm start` so the server has a bundle to serve.");
+  process.exit(1);
+}
 
 const app = express();
 app.disable("x-powered-by");
@@ -50,12 +61,11 @@ app.use((req, res, next) => {
 });
 
 /* ── Auto-mount serverless-style handlers from ./api ── */
-const apiDir = path.join(ROOT, "api");
-if (fs.existsSync(apiDir)) {
-  for (const file of fs.readdirSync(apiDir)) {
+if (fs.existsSync(API_DIR)) {
+  for (const file of fs.readdirSync(API_DIR)) {
     if (!file.endsWith(".js")) continue;
     const route = "/api/" + file.replace(/\.js$/, "");
-    const handler = require(path.join(apiDir, file));
+    const handler = require(path.join(API_DIR, file));
     app.all(route, (req, res) => {
       try {
         const fn = typeof handler === "function" ? handler : handler.default;
@@ -69,37 +79,29 @@ if (fs.existsSync(apiDir)) {
   }
 }
 
-/* ── Static assets (explicit dirs, no source-tree leak) ── */
-for (const dir of STATIC_DIRS) {
-  const abs = path.join(ROOT, dir);
-  if (fs.existsSync(abs)) {
-    app.use("/" + dir, express.static(abs, { maxAge: STATIC_MAX_AGE, etag: true }));
-  }
-}
+/* ── Static bundle: ./public is the ONLY directory exposed ── */
+app.use(express.static(PUBLIC_DIR, {
+  maxAge: STATIC_MAX_AGE,
+  etag: true,
+  index: "index.html",
+  fallthrough: true,
+  dotfiles: "ignore"
+}));
 
-/* ── Static root files (index.html etc.) ── */
-for (const file of STATIC_FILES) {
-  const abs = path.join(ROOT, file);
-  if (fs.existsSync(abs)) {
-    app.get("/" + file, (req, res) => res.sendFile(abs));
-  }
-}
-
-/* ── SPA root and fallback ── */
-app.get("/", (req, res) => res.sendFile(path.join(ROOT, "index.html")));
+/* ── SPA fallback for client-side routes (non-API only) ── */
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
-  res.sendFile(path.join(ROOT, "index.html"));
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
 /* ── 404 for unmatched API ── */
 app.use((req, res) => res.status(404).json({ error: "not_found", path: req.path }));
 
-/* ── Local listener ── */
+/* ── Listener ── */
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🛡️  DroidGuard Quest dev server`);
-    console.log(`    http://localhost:${PORT}`);
+    console.log(`🛡️  DroidGuard Quest`);
+    console.log(`    serving ./public on http://localhost:${PORT}`);
   });
 }
 

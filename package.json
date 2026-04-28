@@ -5,11 +5,11 @@
   "description": "From vulnerability to fortress — your Android security journey, gamified.",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
     "build": "node build.js",
-    "preview": "npx --yes serve -l 3000 dist",
-    "clean": "rm -rf dist"
+    "start": "node server.js",
+    "dev": "node build.js && node server.js",
+    "preview": "node server.js",
+    "clean": "rm -rf public"
   },
   "dependencies": {
     "compression": "^1.7.4",
