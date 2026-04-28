@@ -1,0 +1,13 @@
+{
+  "name": "droidguard-quest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "From vulnerability to fortress — your Android security journey, gamified.",
+  "scripts": {
+    "dev": "npx --yes serve -l 3000 .",
+    "start": "npx --yes serve -l 3000 ."
+  },
+  "engines": { "node": ">=18" },
+  "keywords": ["android", "security", "education", "owasp", "masvs", "gamification"],
+  "license": "MIT"
+}
