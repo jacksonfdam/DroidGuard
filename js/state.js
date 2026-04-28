@@ -1,6 +1,12 @@
-/* DroidGuard Quest — Player State (localStorage persisted) */
+/* DroidGuard Quest — Player State (localStorage persisted)
+ *
+ * State is wrapped through DG_INTEGRITY before being written to
+ * localStorage so that hand-edits via the browser's storage editor
+ * fail validation and silently reset to a fresh save.
+ */
 window.DG_STATE = (function () {
-  const KEY = "dgq:state:v1";
+  const KEY = "dgq:state:v2";        // v2 = integrity-wrapped payload
+  const LEGACY_KEYS = ["dgq:state:v1"]; // older plaintext keys to nuke
 
   const DEFAULT = {
     level: 1,                  // current player level (1..10)
@@ -9,11 +15,22 @@ window.DG_STATE = (function () {
     streakPerfect: 0           // streak of 5/5 levels
   };
 
+  function fresh() { return { ...DEFAULT, completedLevels: {} }; }
+
   function load() {
+    // Drop any legacy plaintext entries to avoid confusion / replay
+    try {
+      LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
+    } catch (_) { /* private mode */ }
+
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return { ...DEFAULT, completedLevels: {} };
-      const parsed = JSON.parse(raw);
+      if (!raw) return fresh();
+      const parsed = window.DG_INTEGRITY.unpack(raw);
+      if (!parsed || !window.DG_INTEGRITY.validate(parsed)) {
+        // Tampered or invalid — start over
+        return fresh();
+      }
       return {
         level: parsed.level || 1,
         xp: parsed.xp || 0,
@@ -21,13 +38,13 @@ window.DG_STATE = (function () {
         streakPerfect: parsed.streakPerfect || 0
       };
     } catch (e) {
-      console.warn("State load failed, resetting", e);
-      return { ...DEFAULT, completedLevels: {} };
+      return fresh();
     }
   }
 
   function save(s) {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(KEY, window.DG_INTEGRITY.pack(s)); }
+    catch (e) { /* ignore */ }
   }
 
   let state = load();
