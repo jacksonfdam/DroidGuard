@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DroidGuard Quest — path styles preview</title>
+<style>
+  :root {
+    --bg: #0A0E27; --panel: #141938; --line: #2A3066;
+    --text: #E6ECFF; --dim: #9AA3CC;
+    --accent: #00FF88;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: radial-gradient(900px 700px at -10% 110%, rgba(0,255,136,.07), transparent 60%),
+                radial-gradient(1200px 800px at 80% -10%, rgba(0,212,255,.08), transparent 60%),
+                var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif;
+    min-height: 100vh;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  p.sub { color: var(--dim); margin: 0 0 20px; font-size: 14px; }
+  .palette { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+  .swatch {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 2px solid var(--line);
+    cursor: pointer;
+    display: grid; place-items: center;
+    color: rgba(0,0,0,.55); font-weight: 700; font-size: 13px;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .swatch.active { border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,.15); transform: scale(1.08); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    color: var(--accent);
+  }
+  .card__title {
+    color: var(--text);
+    font-weight: 700; font-size: 14px;
+    margin: 0 0 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card__title small { color: var(--dim); font-weight: 500; }
+  .card__svg {
+    aspect-ratio: 700 / 1100;
+    display: flex; justify-content: center; align-items: stretch;
+    border-radius: 10px;
+    background: rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  .card__svg svg { width: 100%; height: 100%; display: block; }
+  .footer { color: var(--dim); margin-top: 26px; font-size: 13px; line-height: 1.5; }
+  .footer code {
+    background: rgba(255,255,255,.05); padding: 2px 6px; border-radius: 6px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+  <h1>🗺️ Path styles preview</h1>
+  <p class="sub">Pick a level palette — every SVG re-themes via <code>currentColor</code>.</p>
+
+  <div class="palette" id="palette"></div>
+
+  <div class="grid">
+    <div class="card"><div class="card__title">Circuit Trace <small>circuit.svg</small></div><div class="card__svg" data-svg="circuit.svg"></div></div>
+    <div class="card"><div class="card__title">Topo Contour <small>topo.svg</small></div><div class="card__svg" data-svg="topo.svg"></div></div>
+    <div class="card"><div class="card__title">Transit Line <small>transit.svg</small></div><div class="card__svg" data-svg="transit.svg"></div></div>
+    <div class="card"><div class="card__title">Star Chart <small>starchart.svg</small></div><div class="card__svg" data-svg="starchart.svg"></div></div>
+  </div>
+
+  <p class="footer">
+    Files live at <code>src/assets/paths/*.svg</code>. After build they end up at
+    <code>/assets/paths/*.svg</code>. To use one as the journey-map background,
+    set <code>--accent</code> (or <code>color</code>) on the container, then either
+    inline the SVG or reference it via <code>&lt;img src&gt;</code> with a CSS
+    <code>filter</code> hue-rotation. For full themability, inline the SVG so
+    <code>currentColor</code> is honored.
+  </p>
+
+<script>
+  const PALETTE = [
+    { id: 1,  name: "Foundation",  color: "#E6ECFF" },
+    { id: 2,  name: "Data Vault",  color: "#FFD24A" },
+    { id: 3,  name: "Cipher Gate", color: "#B57BFF" },
+    { id: 4,  name: "Net Shield",  color: "#00D4FF" },
+    { id: 5,  name: "Intent Maze", color: "#5DE2A3" },
+    { id: 6,  name: "Auth Fort.",  color: "#FF5577" },
+    { id: 7,  name: "Code Armor",  color: "#B8C0E0" },
+    { id: 8,  name: "Pentest",     color: "#FFB347" },
+    { id: 9,  name: "Root Det.",   color: "#00FF88" },
+    { id: 10, name: "Guardian",    color: "#FFD24A" }
+  ];
+
+  const palBox = document.getElementById("palette");
+  PALETTE.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.className = "swatch" + (i === 8 ? " active" : "");  // start on Root Det. (neon)
+    b.style.background = p.color;
+    b.title = p.id + " · " + p.name;
+    b.textContent = p.id;
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".swatch").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      document.documentElement.style.setProperty("--accent", p.color);
+      document.querySelectorAll(".card").forEach(c => c.style.color = p.color);
+    });
+    palBox.appendChild(b);
+  });
+
+  // Fetch each SVG and inline it so currentColor is honored.
+  document.querySelectorAll("[data-svg]").forEach(async slot => {
+    const url = slot.getAttribute("data-svg");
+    try {
+      const r = await fetch(url);
+      slot.innerHTML = await r.text();
+    } catch (e) {
+      slot.innerHTML = "<p style='padding:14px;color:#FF5577'>Failed to load " + url + ". Serve via http (npm start) or open this preview through the dev server.</p>";
+    }
+  });
+</script>
+</body>
+</html>

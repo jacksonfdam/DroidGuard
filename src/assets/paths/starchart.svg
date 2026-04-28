@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 1100"
+     fill="none" stroke="currentColor"
+     stroke-linecap="round" stroke-linejoin="round">
+  <!-- ── Background star-field (faint scatter) ────────────────────── -->
+  <g fill="currentColor" stroke="none" opacity=".35">
+    <circle cx="60"  cy="120"  r="1"/>
+    <circle cx="180" cy="200"  r="1.5"/>
+    <circle cx="280" cy="80"   r="1"/>
+    <circle cx="430" cy="240"  r="1.2"/>
+    <circle cx="600" cy="170"  r="1.8"/>
+    <circle cx="640" cy="300"  r="1"/>
+    <circle cx="80"  cy="380"  r="1.4"/>
+    <circle cx="240" cy="450"  r="1"/>
+    <circle cx="500" cy="560"  r="1.6"/>
+    <circle cx="640" cy="640"  r="1"/>
+    <circle cx="50"  cy="720"  r="1.3"/>
+    <circle cx="220" cy="830"  r="1"/>
+    <circle cx="500" cy="780"  r="1.5"/>
+    <circle cx="610" cy="910"  r="1"/>
+    <circle cx="80"  cy="1000" r="1.6"/>
+    <circle cx="280" cy="1040" r="1"/>
+    <circle cx="430" cy="1060" r="1.2"/>
+    <circle cx="100" cy="540"  r="1"/>
+    <circle cx="600" cy="450"  r="1"/>
+    <circle cx="320" cy="230"  r="1"/>
+    <circle cx="480" cy="40"   r="1.3"/>
+    <circle cx="40"  cy="600"  r="1"/>
+    <circle cx="170" cy="950"  r="1.2"/>
+    <circle cx="380" cy="650"  r="1"/>
+    <circle cx="290" cy="350"  r="1.4"/>
+  </g>
+
+  <!-- ── Orbital arc fragments ────────────────────────────────────── -->
+  <g stroke-width="1.5" opacity=".30" stroke-dasharray="3 8">
+    <path d="M 80 940 A 280 280 0 0 1 380 880"/>
+    <path d="M 540 200 A 220 220 0 0 0 200 320"/>
+  </g>
+
+  <!-- ── Dotted constellation line (cleared half) ─────────────────── -->
+  <path d="M 140 1056
+           C 220 1010, 280 990, 350 968
+           C 420 950, 480 920, 546 880
+           C 510 830, 450 790, 392 770
+           C 320 760, 220 720, 168 682
+           C 220 650, 290 600, 350 583"
+        stroke-width="3" stroke-dasharray="2 9"/>
+
+  <!-- ── Dotted constellation line (ahead, fainter) ───────────────── -->
+  <path d="M 350 583
+           C 420 565, 490 530, 546 484
+           C 500 440, 410 400, 350 363
+           C 290 340, 200 300, 154 264
+           C 210 220, 290 170, 350 132"
+        stroke-width="2.5" stroke-dasharray="2 11" opacity=".45"/>
+
+  <!-- ── Milestone star bursts ────────────────────────────────────── -->
+  <g stroke-width="2.5">
+    <g transform="translate(140 1056)">
+      <circle r="6" fill="currentColor" stroke="none"/>
+      <path d="M -24 0 L -12 0 M 12 0 L 24 0
+               M 0 -24 L 0 -12 M 0 12 L 0 24
+               M -17 -17 L -9 -9 M 9 9 L 17 17
+               M -17 17 L -9 9 M 9 -9 L 17 -17"/>
+    </g>
+    <g transform="translate(350 968)">
+      <circle r="7" fill="currentColor" stroke="none"/>
+      <path d="M -26 0 L -13 0 M 13 0 L 26 0
+               M 0 -26 L 0 -13 M 0 13 L 0 26
+               M -19 -19 L -10 -10 M 10 10 L 19 19
+               M -19 19 L -10 10 M 10 -10 L 19 -19"/>
+    </g>
+    <g transform="translate(546 880)">
+      <circle r="6" fill="currentColor" stroke="none"/>
+      <path d="M -24 0 L -12 0 M 12 0 L 24 0
+               M 0 -24 L 0 -12 M 0 12 L 0 24
+               M -17 -17 L -9 -9 M 9 9 L 17 17
+               M -17 17 L -9 9 M 9 -9 L 17 -17"/>
+    </g>
+    <g transform="translate(392 770)">
+      <circle r="6" fill="currentColor" stroke="none"/>
+      <path d="M -24 0 L -12 0 M 12 0 L 24 0
+               M 0 -24 L 0 -12 M 0 12 L 0 24
+               M -17 -17 L -9 -9 M 9 9 L 17 17
+               M -17 17 L -9 9 M 9 -9 L 17 -17"/>
+    </g>
+    <g transform="translate(168 682)">
+      <circle r="7" fill="currentColor" stroke="none"/>
+      <path d="M -26 0 L -13 0 M 13 0 L 26 0
+               M 0 -26 L 0 -13 M 0 13 L 0 26
+               M -19 -19 L -10 -10 M 10 10 L 19 19
+               M -19 19 L -10 10 M 10 -10 L 19 -19"/>
+    </g>
+    <g transform="translate(350 583)">
+      <circle r="8" fill="currentColor" stroke="none"/>
+      <path d="M -28 0 L -14 0 M 14 0 L 28 0
+               M 0 -28 L 0 -14 M 0 14 L 0 28
+               M -20 -20 L -11 -11 M 11 11 L 20 20
+               M -20 20 L -11 11 M 11 -11 L 20 -20"/>
+    </g>
+    <g transform="translate(546 484)">
+      <circle r="6" fill="currentColor" stroke="none"/>
+      <path d="M -24 0 L -12 0 M 12 0 L 24 0
+               M 0 -24 L 0 -12 M 0 12 L 0 24
+               M -17 -17 L -9 -9 M 9 9 L 17 17
+               M -17 17 L -9 9 M 9 -9 L 17 -17"/>
+    </g>
+    <g transform="translate(350 363)">
+      <circle r="7" fill="currentColor" stroke="none"/>
+      <path d="M -26 0 L -13 0 M 13 0 L 26 0
+               M 0 -26 L 0 -13 M 0 13 L 0 26
+               M -19 -19 L -10 -10 M 10 10 L 19 19
+               M -19 19 L -10 10 M 10 -10 L 19 -19"/>
+    </g>
+    <g transform="translate(154 264)">
+      <circle r="6" fill="currentColor" stroke="none"/>
+      <path d="M -24 0 L -12 0 M 12 0 L 24 0
+               M 0 -24 L 0 -12 M 0 12 L 0 24
+               M -17 -17 L -9 -9 M 9 9 L 17 17
+               M -17 17 L -9 9 M 9 -9 L 17 -17"/>
+    </g>
+    <g transform="translate(350 132)">
+      <circle r="9" fill="currentColor" stroke="none"/>
+      <path d="M -30 0 L -14 0 M 14 0 L 30 0
+               M 0 -30 L 0 -14 M 0 14 L 0 30
+               M -22 -22 L -12 -12 M 12 12 L 22 22
+               M -22 22 L -12 12 M 12 -12 L 22 -22"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 1100"
+     fill="none" stroke="currentColor"
+     stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2">
+  <!-- ── Solid PCB trace (cleared half) ───────────────────────────── -->
+  <path d="M 140 1056 H 262 L 350 968
+           H 458 L 546 880
+           L 436 770 H 392
+           H 256 L 168 682
+           L 267 583 H 350" stroke-width="10"/>
+
+  <!-- ── Dashed PCB trace (unreached half) ────────────────────────── -->
+  <path d="M 350 583 H 447 L 546 484
+           L 425 363 H 350
+           H 253 L 154 264
+           L 286 132 H 350"
+        stroke-width="10" stroke-dasharray="6 10" opacity=".55"/>
+
+  <!-- ── Solder pads (10 milestone rings) ─────────────────────────── -->
+  <g stroke-width="5">
+    <circle cx="140" cy="1056" r="26"/>
+    <circle cx="350" cy="968"  r="26"/>
+    <circle cx="546" cy="880"  r="26"/>
+    <circle cx="392" cy="770"  r="26"/>
+    <circle cx="168" cy="682"  r="26"/>
+    <circle cx="350" cy="583"  r="26"/>
+    <circle cx="546" cy="484"  r="26"/>
+    <circle cx="350" cy="363"  r="26"/>
+    <circle cx="154" cy="264"  r="26"/>
+    <circle cx="350" cy="132"  r="26"/>
+  </g>
+  <!-- Inner solder hole (filled) -->
+  <g fill="currentColor" stroke="none">
+    <circle cx="140" cy="1056" r="7"/>
+    <circle cx="350" cy="968"  r="7"/>
+    <circle cx="546" cy="880"  r="7"/>
+    <circle cx="392" cy="770"  r="7"/>
+    <circle cx="168" cy="682"  r="7"/>
+    <circle cx="350" cy="583"  r="7"/>
+    <circle cx="546" cy="484"  r="7"/>
+    <circle cx="350" cy="363"  r="7"/>
+    <circle cx="154" cy="264"  r="7"/>
+    <circle cx="350" cy="132"  r="7"/>
+  </g>
+
+  <!-- ── Branch traces ending in vias ─────────────────────────────── -->
+  <g stroke-width="5" opacity=".75">
+    <path d="M 350 968 V 1010"/>
+    <path d="M 392 770 V 740 H 360"/>
+    <path d="M 168 682 V 642"/>
+    <path d="M 546 484 H 600 V 460"/>
+    <path d="M 350 363 V 333 H 380"/>
+    <path d="M 154 264 V 224"/>
+    <path d="M 350 132 H 410"/>
+  </g>
+  <g fill="currentColor" stroke="none" opacity=".75">
+    <circle cx="350" cy="1010" r="4"/>
+    <circle cx="360" cy="740"  r="4"/>
+    <circle cx="168" cy="642"  r="4"/>
+    <circle cx="600" cy="460"  r="4"/>
+    <circle cx="380" cy="333"  r="4"/>
+    <circle cx="154" cy="224"  r="4"/>
+    <circle cx="410" cy="132"  r="4"/>
+  </g>
+
+  <!-- ── Test point crosshairs ────────────────────────────────────── -->
+  <g stroke-width="3" opacity=".55">
+    <path d="M 60 920 V 940 M 50 930 H 70"/>
+    <path d="M 620 760 V 780 M 610 770 H 630"/>
+    <path d="M 80 480 V 500 M 70 490 H 90"/>
+    <path d="M 620 340 V 360 M 610 350 H 630"/>
+    <path d="M 60 180 V 200 M 50 190 H 70"/>
+  </g>
+
+  <!-- ── Ground hatching (dotted edge marks) ──────────────────────── -->
+  <g stroke-width="2" stroke-dasharray="2 6" opacity=".35">
+    <path d="M 30 1080 H 130"/>
+    <path d="M 590 1080 H 670"/>
+    <path d="M 30 30 H 130"/>
+    <path d="M 590 30 H 670"/>
+  </g>
+</svg>

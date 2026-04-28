@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 1100"
+     fill="none" stroke="currentColor"
+     stroke-linecap="round" stroke-linejoin="round">
+  <!-- ── Solid main line (cleared) ────────────────────────────────── -->
+  <path d="M 140 1056 L 350 968 L 546 880 L 392 770 L 168 682 L 350 583"
+        stroke-width="18"/>
+
+  <!-- ── Ghosted line (ahead) ─────────────────────────────────────── -->
+  <path d="M 350 583 L 546 484 L 350 363 L 154 264 L 350 132"
+        stroke-width="14" opacity=".30"/>
+
+  <!-- ── Tick marks at every station (perpendicular dashes) ───────── -->
+  <g stroke-width="4" opacity=".7">
+    <path d="M 110 1080 L 170 1032"/>
+    <path d="M 320 996  L 380 940"/>
+    <path d="M 516 906  L 576 854"/>
+    <path d="M 422 758  L 362 782"/>
+    <path d="M 138 700  L 198 664"/>
+    <path d="M 320 595  L 380 571"/>
+    <path d="M 516 510  L 576 458"/>
+    <path d="M 322 391  L 378 335"/>
+    <path d="M 124 290  L 184 238"/>
+    <path d="M 320 158  L 380 106"/>
+  </g>
+
+  <!-- ── Stations (outline rings) ─────────────────────────────────── -->
+  <g stroke-width="6">
+    <circle cx="140" cy="1056" r="22"/>
+    <circle cx="350" cy="968"  r="22"/>
+    <circle cx="546" cy="880"  r="22"/>
+    <circle cx="392" cy="770"  r="22"/>
+    <circle cx="168" cy="682"  r="22"/>
+    <circle cx="350" cy="583"  r="22"/>
+    <circle cx="546" cy="484"  r="22"/>
+    <circle cx="350" cy="363"  r="22"/>
+    <circle cx="154" cy="264"  r="22"/>
+    <circle cx="350" cy="132"  r="22"/>
+  </g>
+
+  <!-- ── Interchange markers (concentric ring) on stations 3, 6, 9 ── -->
+  <g stroke-width="3">
+    <circle cx="546" cy="880" r="10"/>
+    <circle cx="350" cy="583" r="10"/>
+    <circle cx="154" cy="264" r="10"/>
+  </g>
+
+  <!-- ── Terminus marker (filled bullet) on first and last ────────── -->
+  <g fill="currentColor" stroke="none">
+    <circle cx="140" cy="1056" r="8"/>
+    <circle cx="350" cy="132"  r="8"/>
+  </g>
+
+  <!-- ── Compass / corner mark ────────────────────────────────────── -->
+  <g stroke-width="2" opacity=".4">
+    <path d="M 30 30 H 60 V 60"/>
+    <path d="M 670 30 H 640 V 60"/>
+    <path d="M 30 1070 H 60 V 1040"/>
+    <path d="M 670 1070 H 640 V 1040"/>
+  </g>
+</svg>
