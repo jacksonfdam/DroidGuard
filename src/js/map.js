@@ -83,6 +83,9 @@ window.DG_MAP = (function () {
             const st = nodeStateFor(lvl);
             const rec = DG_STATE.getLevelRecord(lvl.id);
             const stars = rec ? rec.stars : 0;
+            // Cleared milestones display the level emoji; locked / current show
+            // the level number so the player can map position to level easily.
+            const glyph = st === "done" ? lvl.icon : lvl.id;
             return `
               <button class="map-node is-${st}"
                       style="left:${pos.x}%; top:${pos.y}%;"
@@ -90,7 +93,8 @@ window.DG_MAP = (function () {
                       ${st === "locked" ? "aria-disabled=\"true\"" : ""}
                       title="${lvl.name}">
                 <span class="map-node__stars" aria-hidden="true">${renderStars(stars)}</span>
-                <span class="map-node__num">${st === "done" ? "" : lvl.id}</span>
+                <span class="map-node__plate" aria-hidden="true"></span>
+                <span class="map-node__num">${glyph}</span>
                 <span class="map-node__lbl">${lvl.icon} ${lvl.name}</span>
               </button>
             `;
