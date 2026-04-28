@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 1100"
+     fill="none" stroke="currentColor"
+     stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2">
+
+  <!-- ═══ Background HUD ring fragments (small decorative) ════════ -->
+  <g stroke-width="2" opacity=".35">
+    <circle cx="80"  cy="180" r="22" stroke-dasharray="40 12 8 6"/>
+    <circle cx="630" cy="320" r="18" stroke-dasharray="30 8 4 4"/>
+    <circle cx="60"  cy="540" r="20" stroke-dasharray="50 10"/>
+    <circle cx="640" cy="700" r="24" stroke-dasharray="25 8 12 6"/>
+    <circle cx="80"  cy="900" r="18" stroke-dasharray="30 12"/>
+  </g>
+  <!-- Tiny ticks scattered -->
+  <g stroke-width="2" opacity=".4">
+    <path d="M 50 380 V 396"/>  <path d="M 645 460 V 476"/>
+    <path d="M 50 620 V 636"/>  <path d="M 640 820 V 836"/>
+    <path d="M 80 1000 H 96"/>  <path d="M 600 80 H 616"/>
+  </g>
+
+  <!-- ═══ Connecting traces between milestones (sparse) ═══════════ -->
+  <g stroke-width="3" opacity=".7">
+    <!-- Solid (cleared) -->
+    <path d="M 140 1056 L 350 968"/>
+    <path d="M 350 968  L 546 880"/>
+    <path d="M 546 880  L 392 770"/>
+    <path d="M 392 770  L 168 682"/>
+    <path d="M 168 682  L 350 583"/>
+  </g>
+  <g stroke-width="3" stroke-dasharray="3 6" opacity=".45">
+    <!-- Dashed (ahead) -->
+    <path d="M 350 583 L 546 484"/>
+    <path d="M 546 484 L 350 363"/>
+    <path d="M 350 363 L 154 264"/>
+    <path d="M 154 264 L 350 132"/>
+  </g>
+
+  <!-- ═══ HUD-segmented milestone rings ═══════════════════════════ -->
+  <!-- Each is built from layered arcs with unique broken patterns.
+       The mix of patterns gives the "tactical UI" feeling in ref 3. -->
+
+  <!-- M1 — dense break -->
+  <g transform="translate(140 1056)">
+    <circle r="32" stroke-width="2" stroke-dasharray="12 4 6 3 18 5"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="20 8 10 4 24 4"/>
+    <path d="M -38 0 L -32 0 M 32 0 L 38 0 M 0 -38 L 0 -32 M 0 32 L 0 38" stroke-width="3"/>
+  </g>
+
+  <!-- M2 — pinwheel -->
+  <g transform="translate(350 968)">
+    <circle r="32" stroke-width="2" stroke-dasharray="40 10"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="14 6 6 4 14 6 6 4"/>
+  </g>
+
+  <!-- M3 — half-arc accent -->
+  <g transform="translate(546 880)">
+    <circle r="32" stroke-width="2" stroke-dasharray="60 12 6 4"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="30 8 14 4"/>
+    <path d="M -36 0 L -28 0" stroke-width="4"/>
+  </g>
+
+  <!-- M4 — quad break -->
+  <g transform="translate(392 770)">
+    <circle r="32" stroke-width="2" stroke-dasharray="22 6"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="10 8 24 8"/>
+  </g>
+
+  <!-- M5 — long pulse -->
+  <g transform="translate(168 682)">
+    <circle r="32" stroke-width="2" stroke-dasharray="36 8 12 8"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="40 6 8 4"/>
+  </g>
+
+  <!-- M6 — central / "active" — fully closed inner + segmented outer -->
+  <g transform="translate(350 583)">
+    <circle r="38" stroke-width="2" stroke-dasharray="14 4 6 3 24 4"/>
+    <circle r="28" stroke-width="6" stroke-dasharray="44 6 14 4"/>
+    <circle r="14" stroke-width="3"/>
+    <circle r="3" fill="currentColor" stroke="none"/>
+    <path d="M -42 0 L -32 0 M 32 0 L 42 0
+             M 0 -42 L 0 -32 M 0 32 L 0 42" stroke-width="3"/>
+  </g>
+
+  <!-- M7 — sparse -->
+  <g transform="translate(546 484)">
+    <circle r="32" stroke-width="2" stroke-dasharray="50 14"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="18 8 22 4 12 6"/>
+  </g>
+
+  <!-- M8 — dotted break -->
+  <g transform="translate(350 363)">
+    <circle r="32" stroke-width="2" stroke-dasharray="30 4 6 4 18 4"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="26 6 16 8"/>
+  </g>
+
+  <!-- M9 — minor arcs -->
+  <g transform="translate(154 264)">
+    <circle r="32" stroke-width="2" stroke-dasharray="24 6 8 4"/>
+    <circle r="22" stroke-width="6" stroke-dasharray="50 6 12 4"/>
+  </g>
+
+  <!-- M10 — boss / final -->
+  <g transform="translate(350 132)">
+    <circle r="40" stroke-width="2" stroke-dasharray="22 4 8 4"/>
+    <circle r="30" stroke-width="6" stroke-dasharray="60 6 12 4"/>
+    <circle r="18" stroke-width="3" stroke-dasharray="30 6"/>
+    <circle r="6" fill="currentColor" stroke="none"/>
+    <path d="M -50 0 L -42 0 M 42 0 L 50 0
+             M 0 -50 L 0 -42 M 0 42 L 0 50
+             M -36 -36 L -30 -30 M 30 30 L 36 36
+             M -36 36 L -30 30 M 30 -30 L 36 -36" stroke-width="3"/>
+  </g>
+
+  <!-- ═══ Corner brackets ═══════════════════════════════════════════ -->
+  <g stroke-width="3" opacity=".55">
+    <path d="M 30 30 H 70 M 30 30 V 70"/>
+    <path d="M 670 30 H 630 M 670 30 V 70"/>
+    <path d="M 30 1070 H 70 M 30 1070 V 1030"/>
+    <path d="M 670 1070 H 630 M 670 1070 V 1030"/>
+  </g>
+</svg>
