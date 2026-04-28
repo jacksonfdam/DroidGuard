@@ -117,7 +117,12 @@ async function buildJs(rel) {
   const code = minified.code || src;
 
   const profile = HEAVY_TARGETS.has(rel) ? OBF_HEAVY : OBF_LIGHT;
-  const obf = JsObfuscator.obfuscate(code, profile).getObfuscatedCode();
+  let obf = JsObfuscator.obfuscate(code, profile).getObfuscatedCode();
+  // The obfuscator emits short top-level helper identifiers (e.g. var T=…)
+  // that collide across files when each script is loaded as its own <script>
+  // tag. Wrapping in an IIFE scopes these locals to the file. Globals like
+  // window.DG_* are still attached because the inner code is unchanged.
+  obf = ";(function(){" + obf + "}());\n";
 
   const outPath = path.join(OUT, rel);
   ensureDir(path.dirname(outPath));
