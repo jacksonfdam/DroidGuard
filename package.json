@@ -2,15 +2,24 @@
   "name": "droidguard-quest",
   "version": "1.0.0",
   "private": true,
-  "description": "Da vulnerabilidade à fortaleza — sua jornada de segurança Android, gamificada.",
+  "description": "From vulnerability to fortress — your Android security journey, gamified.",
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node build.js",
+    "preview": "npx --yes serve -l 3000 dist",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "compression": "^1.7.4",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "csso": "^5.0.5",
+    "html-minifier-terser": "^7.2.0",
+    "javascript-obfuscator": "^4.1.0",
+    "terser": "^5.31.0"
   },
   "engines": {
     "node": ">=18"
