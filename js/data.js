@@ -1,0 +1,775 @@
+/* DroidGuard Quest — Level data
+ * Content based on:
+ *  - Karishma Agrawal: "Android Security Deep Dive: 100 Questions to Build Secure Apps" (Parts 1, 2, 3)
+ *  - Shuuubhraj: "Android Pentesting Mindmap"
+ *  - m14r41: "PentestingEverything — Mobile Pentesting"
+ *  - OWASP MASVS / MSTG / Mobile Top 10 (2024)
+ *
+ * Each level has a knowledge modal + a pool of questions (8–10).
+ * Every attempt picks 5 questions at random from that pool.
+ */
+window.DG_DATA = (function () {
+  const LEVELS = [
+    /* ─────────── 1 ─────────── */
+    {
+      id: 1,
+      name: "The Foundation",
+      theme: "Android Security Basics & Architecture",
+      tier: "Intern",
+      difficulty: 1,
+      icon: "🏛️",
+      info: {
+        title: "Sandbox, SELinux & the Manifest",
+        body: `Android is built on the Linux kernel and uses a <em>per-app sandbox</em>.
+        Every app runs in its own process under a unique UID. The <code>AndroidManifest.xml</code>
+        declares permissions, components and security configuration. Understanding the security
+        architecture (SELinux, sandboxing, permissions) is the first step toward building secure apps.`,
+        bullets: [
+          "UID-based sandbox isolates apps from each other.",
+          "SELinux enforces Mandatory Access Control (MAC) policies.",
+          "Components with <code>exported=\"true\"</code> are reachable by other apps."
+        ]
+      },
+      questions: [
+        { q: "Which mechanism does Android use to isolate apps from each other?",
+          options: ["Docker containers", "Application Sandbox (UID-based)", "Virtual Machines", "Firewall rules"],
+          a: 1,
+          why: "Each Android app runs in its own process with a unique UID — a kernel-level sandbox." },
+        { q: "What does SELinux do in the Android context?",
+          options: ["Manages the battery", "Enforces Mandatory Access Control (MAC) policies",
+                    "Compiles Java code", "Manages push notifications"],
+          a: 1,
+          why: "SELinux applies MAC: even root has actions restricted by policy." },
+        { q: "Where are an Android app's permissions declared?",
+          options: ["build.gradle", "MainActivity.java", "AndroidManifest.xml", "settings.xml"],
+          a: 2,
+          why: "AndroidManifest.xml is the single place where permissions and components are declared." },
+        { q: "What happens when a component is marked exported=true?",
+          options: ["The component is removed from the APK", "Other apps can access that component",
+                    "The component runs in background", "The component is encrypted"],
+          a: 1,
+          why: "Exported components expose attack surface to other apps on the device." },
+        { q: "What is the recommended minimum API level for modern Android security?",
+          options: ["API 16", "API 21", "API 28+ (Android 9+)", "API 14"],
+          a: 2,
+          why: "API 28 introduced Network Security Config defaults and blocks cleartext traffic by default." },
+        { q: "Which principle defines 'Least Privilege' on Android?",
+          options: ["Request every permission on the first screen",
+                    "Request only the permissions strictly required, when needed",
+                    "Deny every permission", "Use only system permissions"],
+          a: 1,
+          why: "Asking for the minimum, at runtime, reduces blast radius if the app is compromised." },
+        { q: "Which of these is a 'dangerous permission' on Android?",
+          options: ["INTERNET", "READ_CONTACTS", "VIBRATE", "SET_WALLPAPER"],
+          a: 1,
+          why: "READ_CONTACTS is classified as dangerous and requires runtime consent." },
+        { q: "Which Manifest attribute disables the auto-backup that may leak data via ADB?",
+          options: ["android:debuggable=\"false\"", "android:allowBackup=\"false\"",
+                    "android:backupAgent=\"none\"", "android:secure=\"true\""],
+          a: 1,
+          why: "android:allowBackup=false prevents the app's data from being exported via adb backup." },
+        { q: "Why should you NOT ship an APK with android:debuggable=\"true\"?",
+          options: ["It increases APK size",
+                    "Tools like JDWP/Frida can attach to the process",
+                    "It breaks animations", "It drains battery"],
+          a: 1,
+          why: "Debuggable apps accept debugger and instrumentation connections, exposing memory and flow." }
+      ]
+    },
+
+    /* ─────────── 2 ─────────── */
+    {
+      id: 2,
+      name: "Data Vault",
+      theme: "Data Storage & SharedPreferences Security",
+      tier: "Junior I",
+      difficulty: 1,
+      icon: "🗄️",
+      info: {
+        title: "Where to keep secrets (and where NOT to)",
+        body: `Storing data securely is critical. Plain <code>SharedPreferences</code> writes XML in
+        cleartext. Use <code>EncryptedSharedPreferences</code> (Jetpack Security) for sensitive data.
+        Never store tokens, passwords or PII in regular SharedPreferences, unencrypted SQLite databases
+        or external storage.`,
+        bullets: [
+          "Internal storage is sandboxed per app; external is broadly readable.",
+          "Use SQLCipher for sensitive SQLite databases.",
+          "Tokens belong in the Keystore or EncryptedSharedPreferences."
+        ]
+      },
+      questions: [
+        { q: "Why are default SharedPreferences unsafe for sensitive data?",
+          options: ["They are too slow", "They store data as cleartext XML",
+                    "They don't work offline", "They only work on API 30+"],
+          a: 1,
+          why: "Files live in /data/data/<pkg>/shared_prefs as plain XML — extractable with root or backup." },
+        { q: "Which library should be used for sensitive data in SharedPreferences?",
+          options: ["Room Database", "EncryptedSharedPreferences (Jetpack Security)",
+                    "Firebase Realtime Database", "ContentProvider"],
+          a: 1,
+          why: "EncryptedSharedPreferences encrypts both keys and values using Keystore-derived keys." },
+        { q: "What is the risk of storing data on External Storage?",
+          options: ["Data is auto-deleted",
+                    "Any app with the right permission can read it",
+                    "The system encrypts it automatically", "There is no risk"],
+          a: 1,
+          why: "External storage is broadly readable in older versions — and via Scoped Storage with care." },
+        { q: "What is SQLCipher?",
+          options: ["A UI framework", "A library that adds AES-256 encryption to SQLite databases",
+                    "A SQL linter", "An ORM for Android"],
+          a: 1,
+          why: "SQLCipher provides transparent AES-256 encryption for SQLite." },
+        { q: "Where should authentication tokens ideally be stored?",
+          options: ["Plain SharedPreferences", "External storage",
+                    "Android Keystore / EncryptedSharedPreferences", "A .txt file in assets"],
+          a: 2,
+          why: "Keystore keeps key material inside a TEE/StrongBox, never directly exposed." },
+        { q: "Which modern API replaces direct External Storage with per-app sandboxes?",
+          options: ["Storage Access Framework / Scoped Storage",
+                    "Legacy ContentResolver", "BroadcastReceiver", "FileChannel"],
+          a: 0,
+          why: "Scoped Storage (API 29+) restricts external access to SAF and the app's own dirs." },
+        { q: "Is it safe to log sensitive data with Log.d in production?",
+          options: ["Yes, logs are private",
+                    "No — logs can be readable by other apps in some versions and leak in pentests",
+                    "Yes, if signed", "Only in release mode"],
+          a: 1,
+          why: "Logs are commonly read during dynamic analysis; strip them in release with R8." },
+        { q: "Which practice reduces leak risk via screen recording / screenshots?",
+          options: ["Setting FLAG_SECURE on windows with sensitive content",
+                    "Increasing screen brightness", "Using a smaller font",
+                    "Rendering inside a WebView"],
+          a: 0,
+          why: "WindowManager.LayoutParams.FLAG_SECURE blocks captures and recordings on the Activity." },
+        { q: "For your own ContentProviders, what is the secure default?",
+          options: ["exported=true with no permissions",
+                    "exported=false, or guard with android:permission and signature-level checks",
+                    "Always allow wildcard URIs",
+                    "Accept any Intent"],
+          a: 1,
+          why: "Restrict access by default; use signature-level permissions for trusted inter-app sharing." }
+      ]
+    },
+
+    /* ─────────── 3 ─────────── */
+    {
+      id: 3,
+      name: "Cipher Gate",
+      theme: "Encryption, Keystore & Cryptography",
+      tier: "Junior II",
+      difficulty: 1,
+      icon: "🔐",
+      info: {
+        title: "Crypto that works — and the kind that bites you",
+        body: `The <em>Android Keystore</em> stores keys in a secure container (TEE/StrongBox).
+        Use AES-256 (symmetric) and RSA/EC (asymmetric). Never hardcode keys in source.
+        <code>KeyGenParameterSpec</code> can require biometric authentication to use a key.
+        Avoid DES, MD5 and SHA-1 for security hashing.`,
+        bullets: [
+          "AES/GCM with a fresh random IV per message.",
+          "PBKDF2 / scrypt / Argon2 for key derivation from passwords.",
+          "Digital signatures with EC P-256 or RSA-PSS."
+        ]
+      },
+      questions: [
+        { q: "What is the main purpose of the Android Keystore?",
+          options: ["Store images", "Store cryptographic keys securely",
+                    "Manage permissions", "Compile native code"],
+          a: 1,
+          why: "Keystore keeps key material out of app memory, in hardware when available." },
+        { q: "Which symmetric encryption algorithm is recommended?",
+          options: ["DES", "RC4", "AES-256", "ROT13"],
+          a: 2,
+          why: "AES-256 (preferably in GCM mode) is the modern standard for confidentiality." },
+        { q: "Why must you never hardcode cryptographic keys?",
+          options: ["It increases APK size",
+                    "They can be extracted via reverse engineering (jadx, apktool)",
+                    "The compiler refuses", "It hurts performance"],
+          a: 1,
+          why: "Constant strings in the APK are trivially extracted — always use Keystore or KDFs." },
+        { q: "Which class is used to configure key generation parameters in the Keystore?",
+          options: ["KeyFactory", "KeyGenParameterSpec", "SecretKeyWrapper", "CipherConfig"],
+          a: 1,
+          why: "KeyGenParameterSpec.Builder defines purpose, blockModes, padding, biometric binding, etc." },
+        { q: "Which of these hashes is considered insecure?",
+          options: ["SHA-256", "SHA-512", "MD5", "HMAC-SHA256"],
+          a: 2,
+          why: "MD5 and SHA-1 suffer from collision attacks; use SHA-256+ or HMAC-SHA256." },
+        { q: "What is the risk of using AES in ECB mode?",
+          options: ["Low performance",
+                    "Repeated plaintext patterns remain visible in ciphertext",
+                    "It doesn't work on Android", "It is patented"],
+          a: 1,
+          why: "ECB has no IV: identical blocks produce identical ciphertext — the famous 'ECB penguin'." },
+        { q: "Which mode provides authenticated encryption?",
+          options: ["AES-CBC without MAC", "AES-GCM", "AES-ECB", "RSA-PKCS1v1.5"],
+          a: 1,
+          why: "GCM provides confidentiality + integrity (AEAD) in a single operation." },
+        { q: "What is the benefit of setUserAuthenticationRequired(true) on a key?",
+          options: ["Speeds up encryption",
+                    "The key can only be used after recent biometric authentication",
+                    "Lowers battery use", "Lets you use SHA-1"],
+          a: 1,
+          why: "It binds key usage to a fresh user gesture — protecting against silent abuse." },
+        { q: "To derive a key from a user password, which is best?",
+          options: ["MD5(password)", "SHA-256(password)",
+                    "Argon2id or PBKDF2 with a salt and high iteration count", "Base64(password)"],
+          a: 2,
+          why: "Slow KDFs with salts are designed to resist offline brute-force attacks." }
+      ]
+    },
+
+    /* ─────────── 4 ─────────── */
+    {
+      id: 4,
+      name: "Net Shield",
+      theme: "Network Security & SSL/TLS Pinning",
+      tier: "Mid I",
+      difficulty: 2,
+      icon: "🌐",
+      info: {
+        title: "HTTPS, Network Security Config & Pinning",
+        body: `All network traffic must use HTTPS. <em>Network Security Config</em> (Android 7+) declares
+        rules in XML. <em>Certificate Pinning</em> prevents MitM even when a CA is compromised.
+        Never trust every certificate in production.`,
+        bullets: [
+          "Cleartext is blocked by default starting on Android 9.",
+          "Use OkHttp CertificatePinner or declarative pinning in NSC.",
+          "Rotate pins (always ship a backup pin)."
+        ]
+      },
+      questions: [
+        { q: "What is Certificate Pinning?",
+          options: ["Pinning the app to the home screen",
+                    "Binding the server to a specific certificate or public key",
+                    "Encrypting the database", "Blocking root"],
+          a: 1,
+          why: "The client only accepts connections whose cert/SPKI matches the pinned value." },
+        { q: "Where is Network Security Config configured?",
+          options: ["build.gradle", "res/xml/network_security_config.xml",
+                    "MainActivity.kt", "proguard-rules.pro"],
+          a: 1,
+          why: "You reference it via android:networkSecurityConfig in the Manifest." },
+        { q: "Which attack does Certificate Pinning help prevent?",
+          options: ["SQL Injection", "Man-in-the-Middle (MitM)",
+                    "Buffer Overflow", "Cross-Site Scripting"],
+          a: 1,
+          why: "Even if an attacker installs a root CA, pin mismatch will reject the connection." },
+        { q: "Starting from which Android version is cleartext (HTTP) blocked by default?",
+          options: ["Android 5", "Android 7", "Android 9 (API 28)", "Android 12"],
+          a: 2,
+          why: "On targetSdk 28+, cleartextTrafficPermitted defaults to false." },
+        { q: "Which popular library has native Certificate Pinning support?",
+          options: ["Retrofit (alone)", "Volley", "OkHttp", "AsyncTask"],
+          a: 2,
+          why: "OkHttp.CertificatePinner is the standard mechanism (Retrofit uses OkHttp under the hood)." },
+        { q: "Why is SPKI-based pinning preferred over pinning the whole certificate?",
+          options: ["It is faster",
+                    "It survives certificate rotation when the public key is reused",
+                    "It works without TLS", "It works offline"],
+          a: 1,
+          why: "SPKI pins remain valid across renewals that keep the same public key." },
+        { q: "What is the risk of accepting a 'trust-all' TrustManager in code?",
+          options: ["Lower performance",
+                    "It accepts any certificate, enabling trivial MitM",
+                    "It increases the APK size", "It breaks emojis"],
+          a: 1,
+          why: "It is the most common vuln in insecure apps — any proxy bypasses it." },
+        { q: "Beyond pinning, what else hardens against capture proxies?",
+          options: ["Forcing HTTP", "HSTS or a strict Network Security Config + pinning",
+                    "Trusting all CAs", "Accepting self-signed certs"],
+          a: 1,
+          why: "Combine strict NSC + pin + HSTS for defense-in-depth at the network layer." },
+        { q: "Are <debug-overrides> in NSC safe to rely on for trust in release builds?",
+          options: ["Yes, always", "No — debug-overrides only apply to debuggable builds",
+                    "Yes, if signed", "Yes on emulators"],
+          a: 1,
+          why: "debug-overrides is ignored when android:debuggable=false (release builds)." }
+      ]
+    },
+
+    /* ─────────── 5 ─────────── */
+    {
+      id: 5,
+      name: "Intent Maze",
+      theme: "Intents, Deep Links & IPC Security",
+      tier: "Mid II",
+      difficulty: 2,
+      icon: "🧭",
+      info: {
+        title: "Android IPC: explicit vs. implicit",
+        body: `<em>Intents</em> are Android's IPC mechanism. Explicit intents are safer than implicit ones.
+        Deep links can be exploited if not validated. Exported components are attack surface unless
+        properly guarded with permissions. Use <code>android:exported="false"</code> whenever possible.`,
+        bullets: [
+          "Use App Links (autoVerify) for deep links authenticated via /.well-known.",
+          "Validate every parameter coming from an Intent.",
+          "PendingIntent: prefer FLAG_IMMUTABLE."
+        ]
+      },
+      questions: [
+        { q: "What is the main security difference between explicit and implicit Intents?",
+          options: ["No difference",
+                    "Explicit names the target component, reducing interception risk",
+                    "Implicit is always safer", "Explicit only works with Services"],
+          a: 1,
+          why: "Implicit Intents may be intercepted by other apps that register matching intent-filters." },
+        { q: "What can happen if a deep link is not validated?",
+          options: ["The app gets faster",
+                    "An attacker can inject malicious data or redirect the user",
+                    "The link stops working", "Android blocks it automatically"],
+          a: 1,
+          why: "Deep link parameters are external input — treat them as untrusted." },
+        { q: "Which attribute should be false for components that don't need external access?",
+          options: ["android:enabled", "android:exported", "android:visible", "android:public"],
+          a: 1,
+          why: "From API 31 on, exported must be declared explicitly for components with intent-filters." },
+        { q: "What is a PendingIntent and why is it sensitive?",
+          options: ["An Intent that never executes",
+                    "A token that lets another app perform an action with YOUR app's permissions",
+                    "An Intent only for notifications", "An encrypted Intent"],
+          a: 1,
+          why: "Whoever holds the PendingIntent can fire the action as if your app did." },
+        { q: "Which flag should PendingIntents use for safety on API 31+?",
+          options: ["FLAG_UPDATE_CURRENT", "FLAG_IMMUTABLE", "FLAG_ONE_SHOT", "FLAG_NO_CREATE"],
+          a: 1,
+          why: "FLAG_IMMUTABLE prevents external apps from modifying the embedded Intent." },
+        { q: "Which mechanism formally proves a deep link belongs to your domain?",
+          options: ["intent-filter alone",
+                    "App Links with autoVerify and a /.well-known/assetlinks.json file",
+                    "android:exported=true", "NFC sharing"],
+          a: 1,
+          why: "App Links authenticate domain-to-package via assetlinks.json over HTTPS." },
+        { q: "For exported BroadcastReceivers, what is the recommended practice?",
+          options: ["Accept any system broadcast without checks",
+                    "Restrict to signature-level permissions, or use LocalBroadcastManager / setPackage",
+                    "Always exported=true", "Require root"],
+          a: 1,
+          why: "Constrain the sender (signature/permission) or keep the broadcast in-app." },
+        { q: "When you receive an Intent, what is the safest handling of extras?",
+          options: ["Trust them and use directly", "Validate type, length and format before use",
+                    "Log raw contents", "Forward via implicit Intent"],
+          a: 1,
+          why: "Extras are external input — always validate and treat as untrusted." },
+        { q: "Which call typically enables 'Intent Redirection / Confused Deputy'?",
+          options: ["startActivity(intent.getParcelableExtra(\"target\")) without validation",
+                    "PackageManager.getInstalledPackages",
+                    "Activity.finish()", "Context.getString()"],
+          a: 0,
+          why: "Pulling an Intent from extras and firing it unchecked is the classic redirection pattern." }
+      ]
+    },
+
+    /* ─────────── 6 ─────────── */
+    {
+      id: 6,
+      name: "Auth Fortress",
+      theme: "Authentication, Biometrics & Sessions",
+      tier: "Mid III",
+      difficulty: 2,
+      icon: "🛡️",
+      info: {
+        title: "Login, biometrics & tokens — done right",
+        body: `Use the <em>BiometricPrompt API</em>. Keep access tokens short-lived and rotate refresh
+        tokens. JWTs must validate signature, exp, iss and aud. MFA adds an extra layer.
+        For passwords on the server: bcrypt or Argon2.`,
+        bullets: [
+          "Bind Keystore keys to biometric authentication.",
+          "Detect zombie sessions: idle timeout.",
+          "OAuth 2.0 / OIDC with PKCE for mobile apps."
+        ]
+      },
+      questions: [
+        { q: "Which API is recommended for biometric authentication on Android?",
+          options: ["FingerprintManager (deprecated)", "BiometricPrompt", "FaceDetector", "SmartLock"],
+          a: 1,
+          why: "BiometricPrompt unifies all strong authenticators (fingerprint, face, etc.)." },
+        { q: "Why should JWTs have a short expiration time?",
+          options: ["To save space",
+                    "To limit the attack window if the token is compromised",
+                    "Because the server requires it", "To improve UX"],
+          a: 1,
+          why: "Short TTL plus refresh rotation reduces the impact of token theft." },
+        { q: "What is a refresh token?",
+          options: ["A token that resets the app",
+                    "A long-lived token used to obtain new access tokens",
+                    "A token to update the app", "A push notification token"],
+          a: 1,
+          why: "It keeps long sessions without giving long lifespan to access tokens." },
+        { q: "Which password-hashing algorithm is recommended?",
+          options: ["MD5", "SHA-1", "bcrypt / Argon2", "Base64"],
+          a: 2,
+          why: "They are slow, parameterizable KDFs (cost/memory) — resistant to brute-force." },
+        { q: "What is multi-factor authentication (MFA)?",
+          options: ["Using multiple passwords",
+                    "Combining two or more different factors (something you know, have, are)",
+                    "Logging in on multiple devices", "Double encryption"],
+          a: 1,
+          why: "Combine at least two of: knowledge, possession, inherence." },
+        { q: "In OAuth 2.0 for mobile apps, which extension is mandatory against code interception?",
+          options: ["Implicit Grant", "Resource Owner Password Credentials",
+                    "PKCE (Proof Key for Code Exchange)", "Client Credentials"],
+          a: 2,
+          why: "PKCE protects the authorization code on public clients without a safe client secret." },
+        { q: "Which of these is a sign of inadequate JWT validation?",
+          options: ["Validating signature and claims",
+                    "Accepting 'alg: none' or skipping signature verification",
+                    "Verifying exp and iss", "Restricting aud"],
+          a: 1,
+          why: "Accepting alg=none is the classic JWT attack — pin the expected algorithms." },
+        { q: "Which practice strengthens biometric session bound to a Keystore key?",
+          options: ["setUserAuthenticationRequired(true) + setUserAuthenticationParameters(timeout, ...)",
+                    "Hardcoding the password", "Saving the fingerprint in SharedPreferences",
+                    "Disabling the lock screen"],
+          a: 0,
+          why: "The key becomes usable only after recent authentication, enforced by the system." },
+        { q: "Which of these should NEVER happen on the Android client?",
+          options: ["Local email format validation",
+                    "Final authorization decisions made entirely on the client",
+                    "Showing a generic login error", "Using PKCE"],
+          a: 1,
+          why: "Sensitive authorization must be validated on the server — the client is hostile." }
+      ]
+    },
+
+    /* ─────────── 7 ─────────── */
+    {
+      id: 7,
+      name: "Code Armor",
+      theme: "Obfuscation, R8/ProGuard & Reverse Engineering",
+      tier: "Senior I",
+      difficulty: 3,
+      icon: "⚙️",
+      info: {
+        title: "R8, obfuscation & debugger detection",
+        body: `Obfuscation raises the cost of reverse engineering. <em>R8</em> (the ProGuard successor)
+        does shrinking, optimization and obfuscation. Configure rules in <code>proguard-rules.pro</code>.
+        Tools like <code>jadx</code>, <code>apktool</code> and <code>dex2jar</code> easily decompile APKs.
+        Also consider: debugger detection, APK integrity checks and string encryption.`,
+        bullets: [
+          "Keep mapping.txt to deobfuscate stack traces.",
+          "Enable resource shrinking + minification in release.",
+          "Frida detection via library/port name lookups."
+        ]
+      },
+      questions: [
+        { q: "Which tool replaced ProGuard as the default on Android?",
+          options: ["DexGuard", "R8", "Jack", "Babel"],
+          a: 1,
+          why: "R8 is maintained by Google and integrates minify + optimize + obfuscate." },
+        { q: "What does jadx do?",
+          options: ["Compiles Kotlin code", "Decompiles APKs into readable Java",
+                    "Obfuscates code", "Signs the APK"],
+          a: 1,
+          why: "jadx is the most common static-analysis tool for APKs." },
+        { q: "Where are R8/ProGuard obfuscation rules configured?",
+          options: ["AndroidManifest.xml", "proguard-rules.pro", "build.gradle (only)", "settings.gradle"],
+          a: 1,
+          why: "It is referenced via proguardFiles in build.gradle (release)." },
+        { q: "What is 'string encryption'?",
+          options: ["Encrypting the database",
+                    "Encrypting sensitive strings in the bytecode to deter extraction",
+                    "Using HTTPS", "Renaming variables"],
+          a: 1,
+          why: "Plain strings in resources/bytecode are trivially extracted — encrypt and decrypt at runtime." },
+        { q: "Why is debugger detection important in production apps?",
+          options: ["For better performance",
+                    "To detect dynamic analysis at runtime",
+                    "To fix bugs", "For logging"],
+          a: 1,
+          why: "Debug.isDebuggerConnected() and native checks reveal instrumentation attempts." },
+        { q: "Which Gradle setting enables minification + shrinking?",
+          options: ["minifyEnabled false",
+                    "minifyEnabled true and shrinkResources true in release",
+                    "useProguard 'auto'", "obfuscate 'on'"],
+          a: 1,
+          why: "These are flags inside buildTypes.release in the Android Gradle Plugin." },
+        { q: "Why keep mapping.txt for the release build?",
+          options: ["For a faster app",
+                    "To deobfuscate stack traces and crash reports",
+                    "To shrink the APK", "To avoid build errors"],
+          a: 1,
+          why: "Without mapping.txt, obfuscated stack traces are impossible to debug." },
+        { q: "Which clues hint to an analyst that the app is obfuscated?",
+          options: ["Clear names (LoginViewModel, AuthRepository)",
+                    "Short/random names (a.b.c.d, A1, B2) and classes lacking readable strings",
+                    "Nice icons", "Use of Kotlin"],
+          a: 1,
+          why: "Short renames and stripped strings — characteristic R8 output." },
+        { q: "What is the real limit of obfuscation?",
+          options: ["It makes code irreversible",
+                    "It slows down a determined attacker but does not prevent reversing",
+                    "It replaces pinning", "It guarantees integrity"],
+          a: 1,
+          why: "Obfuscation raises attacker cost — combine with runtime checks for defense-in-depth." }
+      ]
+    },
+
+    /* ─────────── 8 ─────────── */
+    {
+      id: 8,
+      name: "Pentest Arena",
+      theme: "Pentesting: Frida, Objection, MobSF & Drozer",
+      tier: "Senior II",
+      difficulty: 3,
+      icon: "🧪",
+      info: {
+        title: "Static & dynamic analysis of mobile apps",
+        body: `Mobile pentesting blends static analysis (APK) and dynamic analysis (runtime).
+        Key tools: <em>Frida</em> (dynamic instrumentation), <em>Objection</em> (Frida automation),
+        <em>Burp Suite</em> (HTTPS proxy), <em>MobSF</em> (automated static),
+        <em>Drozer</em> (component exploitation). The <em>Android Pentesting Mindmap</em>
+        maps attack vectors: storage, network, auth, crypto and exported components.`,
+        bullets: [
+          "Frida hooks both JNI and Java/ART.",
+          "MobSF emits a CWE/MASVS-aligned report.",
+          "Drozer enumerates ContentProviders and exposed Intents."
+        ]
+      },
+      questions: [
+        { q: "What is Frida in the context of mobile pentesting?",
+          options: ["A UI framework",
+                    "A dynamic instrumentation tool that injects scripts into running processes",
+                    "An antivirus", "An Android emulator"],
+          a: 1,
+          why: "Frida injects an agent into the process and exposes JS APIs to hook Java/native code." },
+        { q: "Which tool intercepts an app's HTTPS traffic?",
+          options: ["Wireshark (alone)", "Burp Suite (with the CA installed)",
+                    "Postman", "Chrome DevTools"],
+          a: 1,
+          why: "Burp acts as MitM — requires trusting its CA on the device (and bypassing pinning)." },
+        { q: "What does MobSF analyze?",
+          options: ["Only the app design",
+                    "Automated static and dynamic security analysis of the APK",
+                    "Only performance", "Only network traffic"],
+          a: 1,
+          why: "MobSF reports on dangerous permissions, secrets, weak crypto and more." },
+        { q: "What is Objection?",
+          options: ["A unit testing framework",
+                    "A mobile runtime exploration toolkit built on top of Frida",
+                    "A code linter", "A dependency manager"],
+          a: 1,
+          why: "Objection automates common tasks: SSL pinning bypass, root bypass, heap dump, etc." },
+        { q: "What is the typical first step of an Android app pentest?",
+          options: ["Publish to the Play Store",
+                    "Extract and decompile the APK for static analysis",
+                    "Run unit tests", "Code review with the developer"],
+          a: 1,
+          why: "Static recon (apktool/jadx) reveals hardcoded secrets, endpoints and exported components." },
+        { q: "Which classic tool lists exported components and exploits Intents?",
+          options: ["Drozer", "Eclipse", "Android Studio Designer", "Robolectric"],
+          a: 0,
+          why: "Drozer (with an agent on the device) enumerates attack surface and fires arbitrary Intents." },
+        { q: "Which AAPT/Manifest flag indicates a debuggable APK?",
+          options: ["android:exported", "android:debuggable=\"true\"",
+                    "android:usesCleartextTraffic", "android:largeHeap"],
+          a: 1,
+          why: "It is the first thing a pentester checks — debuggable in production = jackpot." },
+        { q: "For runtime SSL Pinning bypass, the most common path is:",
+          options: ["Recompile the app without networking",
+                    "Use Frida/Objection scripts to replace TrustManager/CertificatePinner",
+                    "Switch Wi-Fi", "Update Android"],
+          a: 1,
+          why: "Hooks replace pinning checks with 'trust-all' implementations in memory." },
+        { q: "Which finding commonly shows up in MobSF reports?",
+          options: ["Hardcoded API keys and usesCleartextTraffic=true",
+                    "Correct Keystore usage", "PKCE enabled",
+                    "FLAG_SECURE on sensitive screens"],
+          a: 0,
+          why: "These are baseline findings — secrets in code and cleartext enabled." }
+      ]
+    },
+
+    /* ─────────── 9 ─────────── */
+    {
+      id: 9,
+      name: "Root Detector",
+      theme: "Root, Tamper Detection & Runtime Protection",
+      tier: "Senior III",
+      difficulty: 3,
+      icon: "🕵️",
+      info: {
+        title: "Root, Magisk & device integrity",
+        body: `Rooted devices break almost every app-side defense. Detect root by checking the
+        <code>su</code> binary, Magisk/SuperSU presence, system properties (<code>ro.debuggable</code>,
+        <code>ro.secure</code>) and rw partitions. Use the <em>Play Integrity API</em>
+        (the SafetyNet successor). Tamper detection compares APK signatures/checksums at runtime.`,
+        bullets: [
+          "Magisk Hide and Zygisk can hide root.",
+          "Play Integrity reports MEETS_DEVICE_INTEGRITY / STRONG_INTEGRITY.",
+          "Combine signals — none is bypass-proof on its own."
+        ]
+      },
+      questions: [
+        { q: "Which binary is commonly checked to detect root?",
+          options: ["/system/bin/bash", "su", "/system/bin/sh", "adb"],
+          a: 1,
+          why: "Presence of 'su' in /system/xbin, /sbin/su etc. is the most classic indicator." },
+        { q: "What does the Play Integrity API verify?",
+          options: ["Internet speed",
+                    "Device, app and user-account integrity",
+                    "The Android version", "The APK size"],
+          a: 1,
+          why: "It reports tiers (BASIC/DEVICE/STRONG) and whether the app came from the Play Store." },
+        { q: "What is Magisk?",
+          options: ["An antivirus",
+                    "A rooting solution that tries to hide root from apps",
+                    "A testing framework", "A custom ROM"],
+          a: 1,
+          why: "Magisk modifies the system 'systemless-ly' and offers Hide to evade detection." },
+        { q: "How can you verify the APK has not been tampered with?",
+          options: ["Check file size",
+                    "Compare the APK signature/checksum at runtime against the expected value",
+                    "Check the install date", "Check the Android version"],
+          a: 1,
+          why: "PackageManager.getPackageInfo + GET_SIGNING_CERTIFICATES returns the current cert." },
+        { q: "Why can root detection be bypassed?",
+          options: ["Because Android does not support root",
+                    "Because tools like Magisk Hide and Frida can hook the checks",
+                    "Because root no longer exists", "Because Google blocks it"],
+          a: 1,
+          why: "Any userspace check can be hooked — combine with server-side signals for resilience." },
+        { q: "Which of these is a good emulator hint?",
+          options: ["Build.FINGERPRINT containing 'generic' or 'sdk'",
+                    "High screen brightness", "100% battery", "Wi-Fi enabled"],
+          a: 0,
+          why: "Default FINGERPRINT/MODEL/BRAND in emulators are early hints." },
+        { q: "What is the risk of doing root detection only in Java/Kotlin?",
+          options: ["The app slows down",
+                    "It is trivially hookable with Frida — methods can be replaced",
+                    "It does not work offline", "It hurts accessibility"],
+          a: 1,
+          why: "Native (C/C++) implementations with internal checks make superficial hooks harder." },
+        { q: "RASP (Runtime Application Self-Protection) typically:",
+          options: ["Replaces pinning",
+                    "Monitors hooks, debuggers, emulator, root and reacts (kill/log/limit)",
+                    "Compiles the app", "Creates backups"],
+          a: 1,
+          why: "RASP is continuous defense-in-depth during execution." },
+        { q: "Which Play Integrity verdict requires hardware-backed attestation?",
+          options: ["MEETS_BASIC_INTEGRITY", "MEETS_DEVICE_INTEGRITY",
+                    "MEETS_STRONG_INTEGRITY", "MEETS_VIRTUAL_INTEGRITY"],
+          a: 2,
+          why: "STRONG_INTEGRITY requires Keystore in TEE/StrongBox and a locked bootloader." }
+      ]
+    },
+
+    /* ─────────── 10 ─────────── */
+    {
+      id: 10,
+      name: "Guardian Master",
+      theme: "OWASP MASVS, Compliance & Secure SDLC",
+      tier: "Master",
+      difficulty: 4,
+      icon: "👑",
+      info: {
+        title: "Maturity: MASVS, MSTG & Threat Modeling",
+        body: `<em>OWASP MASVS</em> defines verification levels (L1 baseline; L2 defense-in-depth).
+        The <em>MSTG</em> contains the testing procedures. Financial/health apps: MASVS-L2 + Resilience.
+        Real maturity: threat modeling, secure SDLC, security code review, regular pentests,
+        production monitoring.`,
+        bullets: [
+          "MASVS controls: storage, crypto, auth, network, platform, code, resilience.",
+          "Use STRIDE for threat modeling.",
+          "Secure SDLC integrates security from design through deployment."
+        ]
+      },
+      questions: [
+        { q: "What is OWASP MASVS?",
+          options: ["A UI framework",
+                    "A mobile security verification standard",
+                    "A programming language", "A cloud service"],
+          a: 1,
+          why: "MASVS = Mobile Application Security Verification Standard." },
+        { q: "Which MASVS level is recommended for banking apps?",
+          options: ["MASVS-L1", "MASVS-L2 + Resilience (R)", "None", "MASVS-L0"],
+          a: 1,
+          why: "L2 covers defense-in-depth; +R adds anti-reverse-engineering controls." },
+        { q: "What is Threat Modeling?",
+          options: ["Modeling the app UI",
+                    "Identifying and prioritizing potential threats to the system",
+                    "Building 3D models", "Performance testing"],
+          a: 1,
+          why: "Frameworks like STRIDE/PASTA structure the analysis of attack surface and countermeasures." },
+        { q: "What does 'Secure SDLC' mean?",
+          options: ["A type of encryption",
+                    "Embedding security practices throughout the development lifecycle",
+                    "A testing framework", "A certification"],
+          a: 1,
+          why: "From requirements through deployment: threat model, SAST, DAST, code review, pentest, monitoring." },
+        { q: "Which OWASP document provides detailed mobile security testing procedures?",
+          options: ["OWASP Top 10", "MSTG (Mobile Security Testing Guide)", "ASVS", "SAMM"],
+          a: 1,
+          why: "MSTG is the practical companion to MASVS with checklists and how-tos." },
+        { q: "In STRIDE, what does the letter 'R' stand for?",
+          options: ["Replay", "Repudiation (denying a performed action)",
+                    "Reverse engineering", "Race condition"],
+          a: 1,
+          why: "STRIDE: Spoofing, Tampering, Repudiation, Information disclosure, DoS, Elevation of privilege." },
+        { q: "Which is a reasonable KPI for a mobile security program?",
+          options: ["The app theme color",
+                    "Mean time to remediate critical vulnerabilities",
+                    "Number of emojis in the app", "APK size in MB"],
+          a: 1,
+          why: "MTTR/MTTD per severity are key maturity metrics for the program." },
+        { q: "For LGPD/GDPR compliance on mobile, which practice is essential?",
+          options: ["Collect every possible data point",
+                    "Data minimization, explicit legal basis and granular consent",
+                    "Log PII in cleartext", "Share data with any SDK"],
+          a: 1,
+          why: "Privacy by design + minimization are central requirements of these regulations." },
+        { q: "Which of these belongs to MASVS-Resilience (R)?",
+          options: ["Validating form input",
+                    "Anti-debug, anti-tamper, root detection and device binding",
+                    "Internationalization", "Material Design"],
+          a: 1,
+          why: "MASVS-R covers controls that raise the cost of runtime/static attacks." },
+        { q: "Which DevSecOps pipeline is typical in mature Android projects?",
+          options: ["Unit tests only",
+                    "SAST (Detekt/Semgrep) + dependency scan + APK SAST (MobSF) + DAST + code review",
+                    "Manual pentest only", "UI linters only"],
+          a: 1,
+          why: "Layered automation in CI catches security regressions early." }
+      ]
+    }
+  ];
+
+  /* Sources used in the credits screen */
+  const SOURCES = [
+    {
+      name: "Karishma Agrawal",
+      desc: "Android Security Deep Dive: 100 Questions to Build Secure Apps — Parts 1, 2 & 3",
+      links: [
+        { label: "Part 1", url: "https://levelup.gitconnected.com/android-security-deep-dive-100-questions-to-build-secure-apps-part-1-60e1e665bd46" },
+        { label: "Part 2", url: "https://karishma-agr1996.medium.com/android-security-deep-dive-100-questions-to-build-secure-apps-part-2-7b48ecf92847" },
+        { label: "Part 3", url: "https://karishma-agr1996.medium.com/android-security-deep-dive-100-questions-to-build-secure-apps-part-3-a1ae2f776c17" }
+      ]
+    },
+    {
+      name: "Shuuubhraj",
+      desc: "Android Pentesting Mindmap — visual map of the attack surface in Android apps.",
+      links: [
+        { label: "Repository", url: "https://github.com/Shuuubhraj/Android-Pentesting-Mindmap" },
+        { label: "Online mindmap", url: "https://android-mindmap.vercel.app/" }
+      ]
+    },
+    {
+      name: "m14r41",
+      desc: "PentestingEverything — Mobile Pentesting (Android & iOS).",
+      links: [
+        { label: "Mobile Pentesting", url: "https://github.com/m14r41/PentestingEverything/tree/main/Mobile%20Pentesting" },
+        { label: "Main repository", url: "https://github.com/m14r41/PentestingEverything" }
+      ]
+    },
+    {
+      name: "OWASP MASVS / MSTG",
+      desc: "Mobile Application Security Verification Standard and Testing Guide.",
+      links: [
+        { label: "MASVS", url: "https://mas.owasp.org/MASVS/" },
+        { label: "MSTG", url: "https://mas.owasp.org/MASTG/" }
+      ]
+    }
+  ];
+
+  return { LEVELS, SOURCES };
+})();
