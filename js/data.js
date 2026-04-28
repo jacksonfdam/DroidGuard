@@ -940,6 +940,21 @@ window.DG_DATA = (function () {
         { label: "MASVS", url: "https://mas.owasp.org/MASVS/" },
         { label: "MSTG", url: "https://mas.owasp.org/MASTG/" }
       ]
+    },
+    {
+      name: "Intentionally vulnerable practice apps",
+      desc: "Hands-on labs to apply what you learn here. Recommended order: DIVA → InsecureBankv2 → OWASP UnCrackable → AndroGoat → InsecureShop → ovaa.",
+      links: [
+        { label: "DIVA", url: "https://github.com/payatu/diva-android" },
+        { label: "InsecureBankv2", url: "https://github.com/dineshshetty/Android-InsecureBankv2" },
+        { label: "Injured Android", url: "https://github.com/B3nac/InjuredAndroid" },
+        { label: "OWASP UnCrackable", url: "https://github.com/OWASP/owasp-mastg/tree/master/Crackmes" },
+        { label: "InsecureShop", url: "https://github.com/optiv/InsecureShop" },
+        { label: "AndroGoat", url: "https://github.com/satishpatnayak/AndroGoat" },
+        { label: "DVHMA", url: "https://github.com/logicalhacking/DVHMA" },
+        { label: "Vuldroid", url: "https://github.com/jaiswalakshansh/Vuldroid" },
+        { label: "ovaa", url: "https://github.com/oversecured/ovaa" }
+      ]
     }
   ];
 
