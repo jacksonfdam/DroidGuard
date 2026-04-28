@@ -88,46 +88,6 @@
     <code>currentColor</code> is honored.
   </p>
 
-<script>
-  const PALETTE = [
-    { id: 1,  name: "Foundation",  color: "#E6ECFF" },
-    { id: 2,  name: "Data Vault",  color: "#FFD24A" },
-    { id: 3,  name: "Cipher Gate", color: "#B57BFF" },
-    { id: 4,  name: "Net Shield",  color: "#00D4FF" },
-    { id: 5,  name: "Intent Maze", color: "#5DE2A3" },
-    { id: 6,  name: "Auth Fort.",  color: "#FF5577" },
-    { id: 7,  name: "Code Armor",  color: "#B8C0E0" },
-    { id: 8,  name: "Pentest",     color: "#FFB347" },
-    { id: 9,  name: "Root Det.",   color: "#00FF88" },
-    { id: 10, name: "Guardian",    color: "#FFD24A" }
-  ];
-
-  const palBox = document.getElementById("palette");
-  PALETTE.forEach((p, i) => {
-    const b = document.createElement("button");
-    b.className = "swatch" + (i === 8 ? " active" : "");  // start on Root Det. (neon)
-    b.style.background = p.color;
-    b.title = p.id + " · " + p.name;
-    b.textContent = p.id;
-    b.addEventListener("click", () => {
-      document.querySelectorAll(".swatch").forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      document.documentElement.style.setProperty("--accent", p.color);
-      document.querySelectorAll(".card").forEach(c => c.style.color = p.color);
-    });
-    palBox.appendChild(b);
-  });
-
-  // Fetch each SVG and inline it so currentColor is honored.
-  document.querySelectorAll("[data-svg]").forEach(async slot => {
-    const url = slot.getAttribute("data-svg");
-    try {
-      const r = await fetch(url);
-      slot.innerHTML = await r.text();
-    } catch (e) {
-      slot.innerHTML = "<p style='padding:14px;color:#FF5577'>Failed to load " + url + ". Serve via http (npm start) or open this preview through the dev server.</p>";
-    }
-  });
-</script>
+<script src="preview.js"></script>
 </body>
 </html>
