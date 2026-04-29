@@ -234,19 +234,13 @@
       if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
       veil = null;
     }
-    if (PROD) {
-      // Only react to actual page-hidden events. Mobile browsers fire
-      // window.blur on perfectly normal interactions (address bar UI,
-      // tap-to-focus inputs, soft keyboard, modals, scroll-driven URL
-      // bar collapse), so listening to blur produces too many false
-      // 'paused — tap to resume' overlays. visibilitychange:hidden is
-      // the precise 'tab/app went to background' signal we actually
-      // want for screenshot deterrence.
-      document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "hidden") showVeil();
-        else hideVeil();
-      });
-    }
+    // No automatic veil-on-hide: Android/iOS browsers ship multiple
+    // edge-cases that flip visibilityState to 'hidden' for normal
+    // interactions (the URL bar collapsing on scroll, opening a custom
+    // modal, system bottom sheets stealing focus). Showing 'paused —
+    // tap to resume' on those is worse than the screenshot deterrence
+    // is worth. The user-initiated PrintScreen path below still fires.
+    void showVeil; void hideVeil; // referenced via the keydown handler
     document.addEventListener("keydown", function (e) {
       const k = (e.key || "").toLowerCase();
       const isShot = k === "printscreen" || (e.metaKey && e.shiftKey && (k === "3" || k === "4" || k === "5"));
