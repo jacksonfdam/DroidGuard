@@ -10,10 +10,14 @@ window.DG_APP = (function () {
 
   // ---------- HUD ----------
   function refreshHud() {
+    // Defensive: anti-tamper may have nuked the DOM before this runs.
     const s = DG_STATE.get();
-    document.getElementById("hudLevel").textContent = s.level;
-    document.getElementById("hudXp").textContent = s.xp;
-    document.getElementById("hudStars").textContent = DG_STATE.totalStars();
+    const lvl   = document.getElementById("hudLevel");
+    const xp    = document.getElementById("hudXp");
+    const stars = document.getElementById("hudStars");
+    if (lvl)   lvl.textContent   = s.level;
+    if (xp)    xp.textContent    = s.xp;
+    if (stars) stars.textContent = DG_STATE.totalStars();
   }
 
   // ---------- Modal helpers ----------
@@ -666,13 +670,22 @@ window.DG_APP = (function () {
 
   // ---------- Boot ----------
   function init() {
+    // If the anti-tamper layer nuked the DOM before we got here, the HUD
+    // buttons no longer exist — bail silently rather than throw on null.
+    if (window.__DG_TAMPER) return;
+    if (!document.getElementById("hudLevel")) return;
+
     refreshHud();
     renderMap();
 
-    document.getElementById("btnHome").addEventListener("click", () => renderMap());
-    document.getElementById("btnCodex").addEventListener("click", () => renderCodex());
-    document.getElementById("btnAbout").addEventListener("click", () => renderAbout());
-    document.getElementById("btnCredits").addEventListener("click", () => renderCredits());
+    const wire = (id, fn) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", fn);
+    };
+    wire("btnHome",    () => renderMap());
+    wire("btnCodex",   () => renderCodex());
+    wire("btnAbout",   () => renderAbout());
+    wire("btnCredits", () => renderCredits());
   }
 
   return { init, openLevel, toast };
