@@ -41,6 +41,11 @@ window.DG_MAP = (function () {
   // Pick once per session for visual consistency between renderMap calls.
   const sessionStyle = PATH_STYLES[Math.floor(Math.random() * PATH_STYLES.length)];
 
+  // One-shot flag set by app.js after a perfect 5/5 — consumed on next render.
+  let celebrateLevelId = null;
+
+  function markCelebrate(levelId) { celebrateLevelId = levelId; }
+
   function nodeStateFor(level) {
     const id = level.id;
     if (DG_STATE.isCompleted(id)) return "done";
@@ -51,7 +56,9 @@ window.DG_MAP = (function () {
   function renderStars(count) {
     let s = "";
     for (let i = 0; i < 5; i++) {
-      s += `<span class="star ${i < count ? "on" : ""}">★</span>`;
+      // Inner span carries the glyph so the outer .star can keep its arc
+      // transform while the glyph runs its own drop-bounce animation.
+      s += `<span class="star ${i < count ? "on" : ""}"><span class="star__inner">★</span></span>`;
     }
     return s;
   }
@@ -68,6 +75,11 @@ window.DG_MAP = (function () {
     const W = 700, H = 1100;
     const player = DG_STATE.get().level;
     const accent = PALETTE[Math.max(0, Math.min(player - 1, PALETTE.length - 1))];
+
+    // Consume the celebration flag — fires only on the render right after
+    // a perfect 5/5 score and never again until the player nails another one.
+    const celebrate = celebrateLevelId;
+    celebrateLevelId = null;
 
     host.innerHTML = `
       <section class="section">
@@ -86,9 +98,12 @@ window.DG_MAP = (function () {
             // Cleared milestones display the level emoji; locked / current show
             // the level number so the player can map position to level easily.
             const glyph = st === "done" ? lvl.icon : lvl.id;
+            // Per-node accent (the level's own palette colour) so done stars
+            // can adopt the level's tone instead of a single shared gold.
+            const nodeAccent = PALETTE[Math.max(0, Math.min(lvl.id - 1, PALETTE.length - 1))];
             return `
               <button class="map-node is-${st}"
-                      style="left:${pos.x}%; top:${pos.y}%;"
+                      style="left:${pos.x}%; top:${pos.y}%; --node-accent: ${nodeAccent};"
                       data-level-id="${lvl.id}"
                       ${st === "locked" ? "aria-disabled=\"true\"" : ""}
                       title="${lvl.name}">
@@ -105,6 +120,13 @@ window.DG_MAP = (function () {
 
     loadPathArt(host.querySelector(".path-art"), sessionStyle);
 
+    // Apply celebration class via classList API so the rename pipeline picks
+    // it up consistently from the CSS and JS sides.
+    if (celebrate) {
+      const target = host.querySelector('[data-level-id="' + celebrate + '"]');
+      if (target) target.classList.add("is-celebrating");
+    }
+
     host.querySelectorAll(".map-node").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = parseInt(btn.dataset.levelId, 10);
@@ -117,5 +139,5 @@ window.DG_MAP = (function () {
     });
   }
 
-  return { render };
+  return { render, markCelebrate };
 })();

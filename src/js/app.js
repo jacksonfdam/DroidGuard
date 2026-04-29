@@ -257,6 +257,12 @@ window.DG_APP = (function () {
       });
       refreshHud();
 
+      // Tell the map view to drop+bounce the stars on this milestone the
+      // next time it renders. Only fires on a perfect 5/5 finish.
+      if (correctCount === total && window.DG_MAP && DG_MAP.markCelebrate) {
+        DG_MAP.markCelebrate(level.id);
+      }
+
       view.innerHTML = `
         <section class="section score">
           <span class="tag">${level.icon} Level ${level.id} · ${level.name}</span>

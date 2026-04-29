@@ -223,20 +223,88 @@ body::before {
 }
 .map-node .map-node__stars .star {
   position: absolute;
-  width: 14px; height: 14px;
   display: grid; place-items: center;
-  font-size: 14px; line-height: 1;
-  color: var(--gold);
-  text-shadow: 0 0 6px rgba(255, 210, 74, 0.55), 0 1px 2px rgba(0,0,0,.85);
+  line-height: 1;
   opacity: .22;
 }
 .map-node .map-node__stars .star.on { opacity: 1; }
+
+/* Inner glyph carries color, glow and the drop-bounce animation so the
+   outer .star can keep its arc transform unchanged. */
+.map-node .map-node__stars .star__inner {
+  display: inline-block;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(255, 210, 74, 0.55), 0 1px 2px rgba(0,0,0,.85);
+}
+
+/* Tier hierarchy: stars grow from 1 (smallest) to 5 (largest) — first
+   star is bare-pass, fifth is the perfect-run accent. */
+.map-node .map-node__stars .star:nth-child(1) .star__inner { font-size: 11px; }
+.map-node .map-node__stars .star:nth-child(2) .star__inner { font-size: 12.5px; }
+.map-node .map-node__stars .star:nth-child(3) .star__inner { font-size: 14px; }
+.map-node .map-node__stars .star:nth-child(4) .star__inner { font-size: 15.5px; }
+.map-node .map-node__stars .star:nth-child(5) .star__inner { font-size: 17px; }
+
 /* Curve: 5 stars distributed across an 80° arc, each rotated to its tangent. */
 .map-node .map-node__stars .star:nth-child(1) { left: -36px; top: -34px; transform: translate(-50%, -50%) rotate(-32deg); }
 .map-node .map-node__stars .star:nth-child(2) { left: -19px; top: -45px; transform: translate(-50%, -50%) rotate(-16deg); }
-.map-node .map-node__stars .star:nth-child(3) { left:   0;   top: -49px; transform: translate(-50%, -50%); }
+.map-node .map-node__stars .star:nth-child(3) { left:   0;   top: -50px; transform: translate(-50%, -50%); }
 .map-node .map-node__stars .star:nth-child(4) { left:  19px; top: -45px; transform: translate(-50%, -50%) rotate(16deg); }
 .map-node .map-node__stars .star:nth-child(5) { left:  36px; top: -34px; transform: translate(-50%, -50%) rotate(32deg); }
+
+/* Done milestones tint their lit stars with the level's own accent and
+   keep a soft gold halo so the "earned stars" identity stays. */
+.map-node.is-done .map-node__stars .star.on .star__inner {
+  color: var(--node-accent, var(--gold));
+  text-shadow:
+    0 0 6px var(--node-accent, var(--gold)),
+    0 0 14px rgba(255, 210, 74, 0.50),
+    0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+/* ── Drop + bounce on first perfect 5/5 ───────────────────────────
+   App.js calls DG_MAP.markCelebrate(levelId) after a 5/5 finish.
+   On the next renderMap, that milestone gets .is-celebrating and
+   each inner glyph drops in from above and bounces sequentially. */
+@keyframes starDropBounce {
+  0%   { transform: translateY(-200px) scale(0.4) rotate(-25deg); opacity: 0; }
+  35%  { opacity: 1; }
+  60%  { transform: translateY(10px) scale(1.15) rotate(8deg); }
+  78%  { transform: translateY(-5px) scale(0.96) rotate(-4deg); }
+  90%  { transform: translateY(2px) scale(1.02) rotate(1deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+.map-node.is-celebrating .map-node__stars .star .star__inner {
+  animation: starDropBounce 760ms cubic-bezier(.34, 1.56, .64, 1) backwards;
+}
+.map-node.is-celebrating .map-node__stars .star:nth-child(1) .star__inner { animation-delay:   0ms; }
+.map-node.is-celebrating .map-node__stars .star:nth-child(2) .star__inner { animation-delay:  90ms; }
+.map-node.is-celebrating .map-node__stars .star:nth-child(3) .star__inner { animation-delay: 180ms; }
+.map-node.is-celebrating .map-node__stars .star:nth-child(4) .star__inner { animation-delay: 270ms; }
+.map-node.is-celebrating .map-node__stars .star:nth-child(5) .star__inner { animation-delay: 360ms; }
+
+/* A small shockwave ring around the milestone right when celebration starts. */
+.map-node.is-celebrating::after {
+  content: "";
+  position: absolute;
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  border: 3px solid var(--node-accent, var(--gold));
+  animation: starShock 900ms ease-out 1 backwards;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+}
+@keyframes starShock {
+  0%   { transform: scale(0.4); opacity: 0.9; }
+  60%  { opacity: 0.5; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-node.is-celebrating .map-node__stars .star .star__inner { animation: none; }
+  .map-node.is-celebrating::after { animation: none; opacity: 0; }
+}
 
 /* ── Locked: visible but muted number, slightly faded plate ──── */
 .map-node.is-locked { cursor: not-allowed; }
