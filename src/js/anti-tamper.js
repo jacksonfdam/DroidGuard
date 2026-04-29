@@ -29,9 +29,24 @@
     return /^(localhost|127\.|\[::1\]|0\.0\.0\.0)$/.test(h) || h === "";
   })();
 
-  const PROD = !isLocalhost;
+  /* Developer bypass: visiting <site>/?dev=1 once disables anti-tamper for
+     the rest of this session. Useful so the maintainer can open DevTools
+     on their own deploy without nuking the page. */
+  const isDevBypass = (function () {
+    try {
+      const u = new URL(location.href);
+      if (u.searchParams.get("dev") === "1") {
+        sessionStorage.setItem("dgq:dev", "1");
+        return true;
+      }
+      return sessionStorage.getItem("dgq:dev") === "1";
+    } catch (_) { return false; }
+  })();
+
+  const PROD = !isLocalhost && !isDevBypass;
   let tamperReason = null;
   let domNuked = false;
+  let softHits = 0;          // counter for soft devtools_* signals
 
   /* ── DOM nuke (irreversible until reload) ──────────────────────── */
   function nukeDom() {
@@ -52,10 +67,17 @@
       h1.textContent = "🛡️ DroidGuard Quest";
       h1.style.cssText = "font-size:22px;color:#00FF88;margin-bottom:14px";
       const p = document.createElement("div");
-      p.textContent = "Inspection detected. Reload in a clean browser profile (no DevTools, no extensions) to keep playing.";
-      p.style.cssText = "max-width:520px;margin:0 auto";
+      p.textContent = "Inspection or instrumentation detected. Close DevTools / disable extensions and reload to keep playing.";
+      p.style.cssText = "max-width:520px;margin:0 auto;line-height:1.5";
+      const hint = document.createElement("div");
+      hint.style.cssText = "max-width:520px;margin:18px auto 0;font-size:13px;color:#9AA3CC;font-weight:400";
+      hint.innerHTML =
+        "If you are the maintainer, append " +
+        "<code style=\"background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;color:#00FF88\">?dev=1</code>" +
+        " to the URL and reload — the bypass persists for this session.";
       body.appendChild(h1);
       body.appendChild(p);
+      body.appendChild(hint);
       replacement.appendChild(body);
       html.parentNode.replaceChild(replacement, html);
     } catch (_) { /* document gone */ }
@@ -68,14 +90,22 @@
 
   function flag(reason) {
     if (tamperReason) return;
+    // Strong signals: nuke immediately. Frida-style hooks, userscripts,
+    // extension scripts, marker DOM attributes — these are unambiguous.
+    const isStrong = /^(toString_|userscript|ext_script|dom_marker)/.test(reason);
+    // Soft signals: window-size delta, console probe. False-positive prone
+    // (extension toolbars, narrow sidebars, devtools docked tiny). We
+    // require TWO independent soft signals or persistence over multiple
+    // ticks before treating them as real.
+    const isSoft = /^devtools_/.test(reason);
+    if (isSoft) {
+      softHits += 1;
+      // Only act after the second soft hit (or after a strong sibling).
+      if (softHits < 2) return;
+    }
     tamperReason = reason;
     window.__DG_TAMPER = true;
-    if (PROD) {
-      if (/^devtools|toString_|userscript|ext_script|dom_marker/.test(reason)) {
-        nukeDom();
-        return;
-      }
-    }
+    if (PROD && isStrong) { nukeDom(); return; }
     try {
       let banner = document.getElementById("__dg_tb");
       if (!banner && document.body) {
@@ -117,7 +147,10 @@
     if (!PROD) return;
     const dx = Math.abs(window.outerWidth - window.innerWidth);
     const dy = Math.abs(window.outerHeight - window.innerHeight);
-    if (dx > 220 || dy > 240) flag("devtools_size");
+    // Generous thresholds — extension toolbars and OS chrome can easily
+    // produce 200–280px deltas without DevTools open. Only obvious docked
+    // panels exceed 320.
+    if (dx > 320 || dy > 320) flag("devtools_size");
   }
 
   function checkDevtoolsByConsoleProbe() {
