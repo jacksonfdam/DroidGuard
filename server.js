@@ -88,8 +88,12 @@ app.use(express.static(PUBLIC_DIR, {
   dotfiles: "ignore"
 }));
 
-/* ── SPA fallback for client-side routes (non-API only) ── */
-app.get("*", (req, res, next) => {
+/* ── SPA fallback for client-side routes (non-API GETs only).
+ *  Express 5 / path-to-regexp 7 dropped the bare "*" pattern in favor
+ *  of named wildcards. A path-less middleware is forward-compatible
+ *  with both Express 4 and 5, so we use that. */
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
   if (req.path.startsWith("/api/")) return next();
   res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
