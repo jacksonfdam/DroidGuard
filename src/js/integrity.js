@@ -69,7 +69,7 @@ window.DG_INTEGRITY = (function () {
   function validate(state) {
     if (!state || typeof state !== "object") return false;
     if (typeof state.level !== "number" || state.level < 1 || state.level > 10) return false;
-    if (typeof state.xp !== "number" || state.xp < 0 || state.xp > 50000) return false;
+    if (typeof state.xp !== "number" || state.xp < 0 || state.xp > 100000) return false;
     if (typeof state.streakPerfect !== "number" || state.streakPerfect < 0 || state.streakPerfect > 1000) return false;
     if (!state.completedLevels || typeof state.completedLevels !== "object") return false;
     for (const id of Object.keys(state.completedLevels)) {
@@ -78,6 +78,29 @@ window.DG_INTEGRITY = (function () {
       if (typeof r.stars !== "number" || r.stars < 0 || r.stars > 5) return false;
       if (typeof r.points !== "number" || r.points < 0 || r.points > 500) return false;
       if (typeof r.bestPoints !== "number" || r.bestPoints < 0 || r.bestPoints > 500) return false;
+    }
+    // Codex shape check (lenient; absent codex is allowed)
+    if (state.codex !== undefined) {
+      if (typeof state.codex !== "object" || state.codex === null) return false;
+      const cr = state.codex.chaptersRead;
+      if (cr !== undefined) {
+        if (typeof cr !== "object" || cr === null) return false;
+        for (const k of Object.keys(cr)) {
+          const arr = cr[k];
+          if (!Array.isArray(arr) || arr.length > 50) return false;
+          for (const i of arr) {
+            if (typeof i !== "number" || i < 0 || i > 49 || !Number.isFinite(i)) return false;
+          }
+        }
+      }
+      const bc = state.codex.booksCompleted;
+      if (bc !== undefined) {
+        if (typeof bc !== "object" || bc === null) return false;
+        for (const k of Object.keys(bc)) {
+          const t = bc[k];
+          if (typeof t !== "number" || t < 0 || !Number.isFinite(t)) return false;
+        }
+      }
     }
     return true;
   }

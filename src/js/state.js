@@ -12,30 +12,43 @@ window.DG_STATE = (function () {
     level: 1,                  // current player level (1..10)
     xp: 0,                     // total points
     completedLevels: {},       // { [levelId]: { stars, points, bestPoints, attempts } }
-    streakPerfect: 0           // streak of 5/5 levels
+    streakPerfect: 0,          // streak of 5/5 levels
+    codex: {                   // Bonus-quest reading library state
+      chaptersRead: {},        // { [bookId]: [chapterIndex, ...] }
+      booksCompleted: {}       // { [bookId]: timestamp }
+    }
   };
 
-  function fresh() { return { ...DEFAULT, completedLevels: {} }; }
+  function fresh() {
+    return {
+      level: 1, xp: 0,
+      completedLevels: {},
+      streakPerfect: 0,
+      codex: { chaptersRead: {}, booksCompleted: {} }
+    };
+  }
 
   function load() {
-    // Drop any legacy plaintext entries to avoid confusion / replay
-    try {
-      LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
-    } catch (_) { /* private mode */ }
+    try { LEGACY_KEYS.forEach(k => localStorage.removeItem(k)); } catch (_) {}
 
     try {
       const raw = localStorage.getItem(KEY);
       if (!raw) return fresh();
       const parsed = window.DG_INTEGRITY.unpack(raw);
       if (!parsed || !window.DG_INTEGRITY.validate(parsed)) {
-        // Tampered or invalid — start over
         return fresh();
       }
       return {
         level: parsed.level || 1,
         xp: parsed.xp || 0,
         completedLevels: parsed.completedLevels || {},
-        streakPerfect: parsed.streakPerfect || 0
+        streakPerfect: parsed.streakPerfect || 0,
+        codex: parsed.codex && typeof parsed.codex === "object"
+          ? {
+              chaptersRead:    parsed.codex.chaptersRead    || {},
+              booksCompleted:  parsed.codex.booksCompleted  || {}
+            }
+          : { chaptersRead: {}, booksCompleted: {} }
       };
     } catch (e) {
       return fresh();
@@ -43,8 +56,6 @@ window.DG_STATE = (function () {
   }
 
   function save(s) {
-    // Refuse to persist if the runtime detected tampering — keeps a clean
-    // baseline once the user reloads in a clean profile.
     if (window.__DG_TAMPER) return;
     try { localStorage.setItem(KEY, window.DG_INTEGRITY.pack(s)); }
     catch (e) { /* ignore */ }
@@ -54,29 +65,15 @@ window.DG_STATE = (function () {
 
   function get() { return state; }
 
-  function reset() {
-    state = { ...DEFAULT, completedLevels: {} };
-    save(state);
-    return state;
-  }
+  function reset() { state = fresh(); save(state); return state; }
 
   function isUnlocked(levelId) {
     if (levelId === 1) return true;
     return !!state.completedLevels[levelId - 1];
   }
+  function isCompleted(levelId) { return !!state.completedLevels[levelId]; }
+  function getLevelRecord(levelId) { return state.completedLevels[levelId] || null; }
 
-  function isCompleted(levelId) {
-    return !!state.completedLevels[levelId];
-  }
-
-  function getLevelRecord(levelId) {
-    return state.completedLevels[levelId] || null;
-  }
-
-  /**
-   * Recompute the displayed "player level":
-   * starts at 1; +1 per cleared level (capped at 10).
-   */
   function recomputeLevel() {
     const completedCount = Object.keys(state.completedLevels).length;
     state.level = Math.min(10, 1 + completedCount);
@@ -92,16 +89,12 @@ window.DG_STATE = (function () {
       points,
       bestPoints: Math.max(prev.bestPoints || 0, points),
       attempts: (prev.attempts || 0) + 1,
-      correct,
-      total,
+      correct, total,
       lastPlayed: Date.now()
     };
-
-    // XP only counts improvement on the personal best for that level
     const xpGain = Math.max(0, points - (prev.bestPoints || 0));
     state.xp += xpGain;
 
-    // Streak of perfect runs (5/5)
     if (correct === total) state.streakPerfect += 1;
     else state.streakPerfect = 0;
 
@@ -117,8 +110,93 @@ window.DG_STATE = (function () {
     return total;
   }
 
+  /* ── Codex (bonus library) ─────────────────────────────────────── */
+
+  function _ensureCodex() {
+    if (!state.codex) state.codex = { chaptersRead: {}, booksCompleted: {} };
+    if (!state.codex.chaptersRead)   state.codex.chaptersRead = {};
+    if (!state.codex.booksCompleted) state.codex.booksCompleted = {};
+  }
+
+  function isChapterRead(bookId, chapterIndex) {
+    _ensureCodex();
+    const arr = state.codex.chaptersRead[bookId];
+    return !!(arr && arr.indexOf(chapterIndex) !== -1);
+  }
+
+  function isBookCompleted(bookId) {
+    _ensureCodex();
+    return !!state.codex.booksCompleted[bookId];
+  }
+
+  function chaptersReadCount(bookId) {
+    _ensureCodex();
+    const arr = state.codex.chaptersRead[bookId];
+    return arr ? arr.length : 0;
+  }
+
+  /**
+   * Record a chapter read. Awards POINTS_PER_CHAPTER on first read,
+   * plus POINTS_PER_BOOK once every chapter of that book has been read.
+   */
+  function recordChapterRead(bookId, chapterIndex) {
+    _ensureCodex();
+    if (!state.codex.chaptersRead[bookId]) state.codex.chaptersRead[bookId] = [];
+    if (state.codex.chaptersRead[bookId].indexOf(chapterIndex) !== -1) {
+      return { alreadyRead: true, xpGain: 0, bookCompleted: false };
+    }
+    state.codex.chaptersRead[bookId].push(chapterIndex);
+
+    let xpGain = (window.DG_LIBRARY && window.DG_LIBRARY.POINTS_PER_CHAPTER) || 25;
+    let bookCompleted = false;
+    const book = window.DG_LIBRARY && window.DG_LIBRARY.getBook(bookId);
+    if (book && state.codex.chaptersRead[bookId].length >= book.chapters &&
+        !state.codex.booksCompleted[bookId]) {
+      state.codex.booksCompleted[bookId] = Date.now();
+      xpGain += (window.DG_LIBRARY && window.DG_LIBRARY.POINTS_PER_BOOK) || 100;
+      bookCompleted = true;
+    }
+    state.xp += xpGain;
+    save(state);
+    return { alreadyRead: false, xpGain, bookCompleted };
+  }
+
+  function totalCodexXp() {
+    _ensureCodex();
+    let xp = 0;
+    const cps = (window.DG_LIBRARY && window.DG_LIBRARY.POINTS_PER_CHAPTER) || 25;
+    const bps = (window.DG_LIBRARY && window.DG_LIBRARY.POINTS_PER_BOOK)    || 100;
+    Object.values(state.codex.chaptersRead).forEach(arr => { xp += arr.length * cps; });
+    xp += Object.keys(state.codex.booksCompleted).length * bps;
+    return xp;
+  }
+
+  function readingHistory() {
+    _ensureCodex();
+    const out = [];
+    const lib = window.DG_LIBRARY;
+    if (!lib) return out;
+    Object.keys(state.codex.chaptersRead).forEach(bookId => {
+      const book = lib.getBook(bookId);
+      if (!book) return;
+      out.push({
+        bookId,
+        title: book.title,
+        area: book.area.name,
+        areaIcon: book.area.icon,
+        chaptersRead: state.codex.chaptersRead[bookId].length,
+        totalChapters: book.chapters,
+        completedAt: state.codex.booksCompleted[bookId] || null
+      });
+    });
+    out.sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+    return out;
+  }
+
   return {
     get, reset, isUnlocked, isCompleted, recordResult,
-    getLevelRecord, totalStars
+    getLevelRecord, totalStars,
+    isChapterRead, isBookCompleted, chaptersReadCount,
+    recordChapterRead, totalCodexXp, readingHistory
   };
 })();

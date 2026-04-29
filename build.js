@@ -30,6 +30,8 @@ const OUT = path.join(ROOT, "public");
 const JS_FILES = [
   "js/anti-tamper.js",
   "js/data.js",
+  "js/library.js",
+  "js/markdown.js",
   "js/integrity.js",
   "js/state.js",
   "js/quiz.js",
@@ -74,7 +76,7 @@ const OBF_LIGHT = {
   unicodeEscapeSequence: false
 };
 
-const HEAVY_TARGETS = new Set(["js/data.js", "js/integrity.js", "js/state.js", "js/quiz.js"]);
+const HEAVY_TARGETS = new Set(["js/data.js", "js/library.js", "js/integrity.js", "js/state.js", "js/quiz.js"]);
 
 /* ── CSS class / ID rename ───────────────────────────────────────────
  * Builds a deterministic map { 'class:hud': '_a', 'id:view': '_b', ... }

@@ -617,6 +617,167 @@ body::before {
   .score__points { font-size: 34px; }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+ * CODEX (bonus library)
+ * ────────────────────────────────────────────────────────────── */
+.codex-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
+.codex-back { margin-bottom: 4px; }
+
+.codex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.codex-area {
+  text-align: left;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--area-color, var(--cyan));
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  display: flex; gap: 14px; align-items: flex-start;
+  transition: all var(--transition);
+  color: var(--text);
+}
+.codex-area:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.codex-area__icon {
+  flex: 0 0 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.04);
+  font-size: 26px; line-height: 1;
+}
+.codex-area__body { flex: 1; min-width: 0; }
+.codex-area__name {
+  font-weight: 700; font-size: 16px; margin: 0 0 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.codex-area__check { color: var(--cyan); font-weight: 800; }
+.codex-area__desc { font-size: 13px; color: var(--text-dim); margin: 0 0 10px; line-height: 1.4; }
+.codex-area__progress { display: flex; align-items: center; gap: 8px; }
+.codex-area__bar {
+  flex: 1; height: 6px; border-radius: 999px;
+  background: var(--bg-3); overflow: hidden;
+  border: 1px solid var(--line);
+}
+.codex-area__fill {
+  height: 100%; background: var(--area-color, var(--cyan));
+  width: 0; transition: width .35s ease;
+}
+.codex-area__count { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+
+/* Books inside an area */
+.codex-grid--books { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.codex-book {
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  display: block;
+  transition: all var(--transition);
+  color: var(--text);
+}
+.codex-book:hover { border-color: var(--area-color, var(--cyan)); transform: translateY(-2px); }
+.codex-book.is-done { border-color: var(--cyan); background: linear-gradient(160deg, var(--panel), rgba(0,212,255,.08)); }
+.codex-book__title { font-weight: 700; font-size: 15px; margin: 0 0 4px; display: flex; gap: 8px; align-items: center; }
+.codex-book__check { color: var(--cyan); font-weight: 800; }
+.codex-book__tagline { font-size: 13px; color: var(--text-dim); margin: 0 0 10px; line-height: 1.45; font-style: italic; }
+
+/* Chapter list inside a book */
+.codex-chapters { display: grid; gap: 8px; margin-top: 6px; }
+.codex-chapter {
+  text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text); cursor: pointer;
+  transition: all var(--transition);
+  font-size: 14px;
+}
+.codex-chapter:hover { border-color: var(--cyan); transform: translateX(2px); }
+.codex-chapter.is-read { border-color: rgba(0,212,255,.5); background: rgba(0,212,255,.06); }
+.codex-chapter__num {
+  flex: 0 0 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--line);
+  font-weight: 700; font-size: 14px;
+}
+.codex-chapter.is-read .codex-chapter__num { background: var(--cyan); color: #0A0E27; border-color: var(--cyan); }
+.codex-chapter__title { flex: 1; font-weight: 600; }
+.codex-chapter__state { color: var(--text-dim); font-size: 12px; white-space: nowrap; }
+.codex-chapter.is-read .codex-chapter__state { color: var(--cyan); font-weight: 700; }
+
+/* Reader modal */
+.codex-reader {
+  max-height: 56vh; overflow-y: auto;
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text); line-height: 1.65; font-size: 15px;
+  scroll-behavior: smooth;
+}
+.codex-reader h1 { font-size: 22px; margin: 8px 0 10px; color: var(--text); }
+.codex-reader h2 { font-size: 18px; margin: 16px 0 8px; color: var(--cyan); }
+.codex-reader h3 { font-size: 16px; margin: 12px 0 6px; color: var(--neon); }
+.codex-reader p  { margin: 8px 0; color: var(--text-dim); }
+.codex-reader strong { color: var(--text); }
+.codex-reader em { color: var(--text); font-style: italic; }
+.codex-reader code {
+  background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 4px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+  color: var(--neon);
+}
+.codex-reader pre {
+  background: var(--bg-3); border: 1px solid var(--line);
+  padding: 12px 14px; border-radius: 10px; overflow-x: auto;
+  margin: 10px 0;
+}
+.codex-reader pre code { background: none; padding: 0; color: var(--text); font-size: 12.5px; }
+.codex-reader ul { padding-left: 22px; margin: 8px 0; color: var(--text-dim); }
+.codex-reader li { margin: 4px 0; }
+.codex-reader a { color: var(--cyan); text-decoration: none; }
+.codex-reader a:hover { text-decoration: underline; }
+.codex-reader blockquote {
+  border-left: 3px solid var(--cyan);
+  padding: 4px 14px; margin: 10px 0;
+  background: rgba(0,212,255,.06);
+  border-radius: 0 8px 8px 0;
+}
+
+.codex-reader__progress {
+  height: 4px; margin: 8px 0 0;
+  background: var(--bg-3); border-radius: 999px;
+  overflow: hidden;
+}
+.codex-reader__bar { height: 100%; width: 0; background: var(--grad-neon); transition: width 0.15s linear; }
+
+/* History list */
+.codex-history { display: grid; gap: 10px; }
+.codex-history__item {
+  display: flex; gap: 12px; align-items: center;
+  padding: 12px 16px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.codex-history__icon {
+  flex: 0 0 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.04);
+  font-size: 20px;
+}
+.codex-history__body { flex: 1; min-width: 0; }
+.codex-history__title { font-weight: 700; font-size: 14px; }
+.codex-history__meta { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+.codex-history__open { flex: 0 0 auto; }
+
 /* utilities */
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .spacer { flex: 1; }
