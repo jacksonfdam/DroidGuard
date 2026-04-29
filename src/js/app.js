@@ -361,6 +361,10 @@ window.DG_APP = (function () {
             <h2>📖 What is this</h2>
             <p>A free, study-only single-page app that turns Android security knowledge into a Duolingo-style journey. Ten themed levels take you from <strong>Junior</strong> to <strong>Senior</strong>, plus a bonus <strong>Codex</strong> with longer-form reading.</p>
             <p>No accounts, no analytics, no servers. Everything lives in your browser. The app is open to read, the content is owned by the upstream authors listed in Credits.</p>
+            <div class="row" style="margin-top: 12px; gap: 10px;">
+              <button class="btn" id="btnInstallApp">📲 Install on this device</button>
+              <span class="muted" style="font-size: 12px;">Adds a launcher icon — opens like a native app.</span>
+            </div>
           </div>
 
           <div class="about-card about-card--score">
@@ -418,6 +422,13 @@ window.DG_APP = (function () {
         </div>
       </section>
     `;
+    const installBtn = document.getElementById("btnInstallApp");
+    if (installBtn) {
+      installBtn.addEventListener("click", () => {
+        if (window.DG_PWA && DG_PWA.promptInstall) DG_PWA.promptInstall();
+        else toast("Your browser doesn't support installing this app.", "error");
+      });
+    }
     fxTransition();
   }
 
