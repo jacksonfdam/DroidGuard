@@ -101,14 +101,16 @@ body::before {
   font-weight: 800;
   letter-spacing: 0.04em;
   font-size: 16px;
-  background: var(--grad-neon);
+  /* Use background-image (longhand) so csso's restructure can't reorder a
+     shorthand 'background:' before background-clip:text and reset it. */
+  background-image: var(--grad-neon);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   white-space: nowrap;
 }
 .hud__brand-name--accent {
-  background: linear-gradient(135deg, var(--cyan), var(--neon));
+  background-image: linear-gradient(135deg, var(--cyan), var(--neon));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

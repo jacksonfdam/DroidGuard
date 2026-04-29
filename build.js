@@ -148,6 +148,11 @@ function renameHtmlAttrs(s, map) {
   s = s.replace(/\b(id)=("|')([^"']+)\2/g, (m, attr, q, val) => {
     return attr + "=" + q + (map.get("id:" + val) || val) + q;
   });
+  // SVG / CSS url(#id) fragment references inside any attribute value
+  // (e.g. stroke="url(#dgLogoGrad)", fill="url(#…)", filter="url(#…)").
+  // Without this pass the gradient/filter id gets renamed but its
+  // reference does not, breaking the SVG paint.
+  s = s.replace(/url\(#([a-zA-Z_][\w-]*)\)/g, (m, n) => "url(#" + (map.get("id:" + n) || n) + ")");
   return s;
 }
 
