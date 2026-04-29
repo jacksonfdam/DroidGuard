@@ -678,14 +678,18 @@ window.DG_APP = (function () {
     refreshHud();
     renderMap();
 
-    const wire = (id, fn) => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener("click", fn);
-    };
-    wire("btnHome",    () => renderMap());
-    wire("btnCodex",   () => renderCodex());
-    wire("btnAbout",   () => renderAbout());
-    wire("btnCredits", () => renderCredits());
+    // Each getElementById call must be a literal — the build's class/id
+    // renamer rewrites the string in place, but only on direct
+    // getElementById("…") syntax. Indirect calls via a helper that
+    // forwards a variable would NOT be renamed, breaking every button.
+    const btnHome    = document.getElementById("btnHome");
+    const btnCodex   = document.getElementById("btnCodex");
+    const btnAbout   = document.getElementById("btnAbout");
+    const btnCredits = document.getElementById("btnCredits");
+    if (btnHome)    btnHome.addEventListener("click",    () => renderMap());
+    if (btnCodex)   btnCodex.addEventListener("click",   () => renderCodex());
+    if (btnAbout)   btnAbout.addEventListener("click",   () => renderAbout());
+    if (btnCredits) btnCredits.addEventListener("click", () => renderCredits());
   }
 
   return { init, openLevel, toast };
