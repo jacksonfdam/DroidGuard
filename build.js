@@ -279,7 +279,12 @@ async function buildHtml() {
 function buildCss() {
   let src = fs.readFileSync(path.join(SRC, "css/styles.css"), "utf8");
   src = renameCss(src, RENAME_MAP);
-  const out = csso.minify(src, { restructure: true }).css;
+  // restructure: false. csso's restructure tries to factor rules across
+  // selectors but has been observed to lift media-query-only rules into
+  // global scope (turning a mobile-only `flex: 1 0 100%` into a desktop
+  // rule), which breaks layout. The size win from restructure is small
+  // (~5%); correctness wins.
+  const out = csso.minify(src, { restructure: false }).css;
   const outPath = path.join(OUT, "css/styles.css");
   ensureDir(path.dirname(outPath));
   fs.writeFileSync(outPath, out);

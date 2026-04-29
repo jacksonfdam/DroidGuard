@@ -120,10 +120,9 @@ body::before {
   margin-left: 2px;
   opacity: 0.85;
 }
-@media (max-width: 540px) {
-  .hud__brand-name { display: none; }
-  .hud__logo { width: 32px; height: 32px; }
-}
+/* Mobile rules for the brand live inside the consolidated breakpoint at the
+   bottom of this file (search for "Responsive"). Keeping every @media block
+   consolidated avoids csso restructure pulling rules out of the wrapper. */
 .hud__stats { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .hud__chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -682,6 +681,7 @@ body::before {
   .hud__btn  { width: 38px; height: 38px; }
   .hud__nav  { gap: 6px; }
   .hud__brand { padding: 2px 8px 2px 2px; }
+  .hud__brand-name { display: none; }
   .hud__logo { width: 30px; height: 30px; }
 
   .map-node { width: 64px; height: 64px; }
