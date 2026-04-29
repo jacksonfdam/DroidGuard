@@ -169,6 +169,8 @@ window.DG_APP = (function () {
 
     function renderQuestion() {
       const q = session[idx];
+      // Bar reflects answered questions: 0 / total before any answer,
+      // (idx+1) / total once the current one is answered (set in onAnswer).
       const pct = (idx / session.length) * 100;
       view.innerHTML = `
         <section class="section">
@@ -222,6 +224,10 @@ window.DG_APP = (function () {
       const q = session[idx];
       const correct = chosen === q.a;
       if (correct) correctCount++;
+
+      // Advance the progress bar — the very last answer hits 100 %.
+      const fill = view.querySelector(".progressbar__fill");
+      if (fill) fill.style.width = (((idx + 1) / session.length) * 100) + "%";
 
       view.querySelectorAll(".opt").forEach((el, i) => {
         el.disabled = true;
