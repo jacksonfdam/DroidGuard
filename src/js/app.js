@@ -323,6 +323,100 @@ window.DG_APP = (function () {
   }
 
   /* ─────────────────────────────────────────────────────────────────
+   *  ABOUT / GUIDE
+   * ────────────────────────────────────────────────────────────── */
+  function renderAbout() {
+    const totalCh = window.DG_LIBRARY ? DG_LIBRARY.totalChapters() : 60;
+    const totalBk = window.DG_LIBRARY ? DG_LIBRARY.totalBooks()    : 20;
+
+    view.innerHTML = `
+      <section class="section">
+        <div class="about-hero">
+          <svg class="about-hero__logo" viewBox="0 0 64 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="abLogoGrad" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#00FF88"/>
+                <stop offset="1" stop-color="#00D4FF"/>
+              </linearGradient>
+            </defs>
+            <path d="M32 6 L54 14 V30 C54 44 44 56 32 60 C20 56 10 44 10 30 V14 Z"
+                  fill="none" stroke="url(#abLogoGrad)" stroke-width="3.2" stroke-linejoin="round"/>
+            <path d="M22 32 L29 39 L42 24"
+                  fill="none" stroke="url(#abLogoGrad)" stroke-width="3.2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20" cy="14" r="1.6" fill="url(#abLogoGrad)"/>
+            <circle cx="44" cy="14" r="1.6" fill="url(#abLogoGrad)"/>
+          </svg>
+          <h1 class="about-hero__title">DroidGuard Quest</h1>
+          <p class="about-hero__sub">"From vulnerability to fortress — your Android security journey, gamified."</p>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-card">
+            <h2>📖 What is this</h2>
+            <p>A free, study-only single-page app that turns Android security knowledge into a Duolingo-style journey. Ten themed levels take you from <strong>Junior</strong> to <strong>Senior</strong>, plus a bonus <strong>Codex</strong> with longer-form reading.</p>
+            <p>No accounts, no analytics, no servers. Everything lives in your browser. The app is open to read, the content is owned by the upstream authors listed in Credits.</p>
+          </div>
+
+          <div class="about-card about-card--score">
+            <h2>🗺️ How the levels work</h2>
+            <p>The map shows the 10 levels of the journey. Each level opens a short briefing, then asks you 5 random questions drawn from a pool of 9–17 per level.</p>
+            <ul>
+              <li><strong>Each correct answer</strong> = 100 points. A perfect run = 500.</li>
+              <li><strong>Stars</strong>: 5/5 → ⭐⭐⭐⭐⭐, 4/5 → ⭐⭐⭐⭐, 0/5 → 💀.</li>
+              <li><strong>Player level</strong> (LV in the HUD) = 1 + number of cleared levels.</li>
+              <li><strong>XP</strong> only counts your <em>personal best</em> — repeating a level doesn't farm.</li>
+              <li><strong>Streak</strong> of three perfect 5/5 runs = "🔥 On Fire" badge.</li>
+              <li>Each level <strong>unlocks the next</strong>. Locked nodes show their number; current pulses neon; cleared show the level emoji + ✓.</li>
+            </ul>
+            <div class="score-table">
+              <span class="key">5/5</span><span class="val">Perfect run</span><span class="pts">+500</span>
+              <span class="key">4/5</span><span class="val">Almost there</span><span class="pts">+400</span>
+              <span class="key">3/5</span><span class="val">Good job</span><span class="pts">+300</span>
+              <span class="key">2/5</span><span class="val">Keep studying</span><span class="pts">+200</span>
+              <span class="key">1/5</span><span class="val">Try again</span><span class="pts">+100</span>
+            </div>
+            <p>Tip: read the briefing on each level <em>before</em> starting the quiz — the questions cover the same concepts in shuffled order.</p>
+          </div>
+
+          <div class="about-card about-card--codex">
+            <h2>📚 How the Codex works</h2>
+            <p>The Codex is a parallel learning surface — short article companions you read on your own time for bonus XP. Open it from the <span class="kbd">📚</span> button in the HUD.</p>
+            <ul>
+              <li><strong>${totalBk} books</strong> across <strong>6 themed areas</strong>, ~${Math.round(totalCh / totalBk)} chapters each (<strong>${totalCh} chapters total</strong>).</li>
+              <li>Each chapter reads in 1–2 minutes inside a modal.</li>
+              <li><strong>+25 XP per chapter</strong>, plus <strong>+100 XP bonus</strong> when every chapter of a book is read.</li>
+              <li>The "Mark as read" button unlocks after you scroll ~80% of the chapter (or after 2.5s for very short ones).</li>
+              <li>Every chapter ends with a back-link to the original Medium article or repo — the Codex summarizes, the source has the full take.</li>
+              <li><strong>📜 History</strong> tab inside Codex shows what you've read, newest first.</li>
+            </ul>
+          </div>
+
+          <div class="about-card about-card--privacy">
+            <h2>🛡️ Privacy & data</h2>
+            <p>All progress (level state, stars, XP, Codex reading) lives in your browser's <code>localStorage</code> only. The payload is XOR-masked + checksum-stamped, so hand-edits via the storage editor either fail validation or trip the integrity check and reset progress.</p>
+            <p>On non-localhost hosts the production bundle adds passive defenses: <strong>console blocking</strong>, a periodic <strong>debugger trap</strong>, <strong>DevTools heuristics</strong> and a <strong>screenshot veil</strong> on focus loss. These are deterrents, not a guarantee — see Credits for the full reasoning.</p>
+            <p>You can <strong>reset your progress</strong> any time from the bottom of the Credits screen.</p>
+          </div>
+
+          <div class="about-card">
+            <h2>⌨️ Tips & easter eggs</h2>
+            <ul>
+              <li>The path-art style is randomized per session: refresh to roll a new look from <em>chip-hub</em>, <em>hud-tactical</em> or <em>circuit</em>.</li>
+              <li>The CRT scanlines + glitch effects use one of <strong>seven random presets</strong> per load — sometimes pristine, sometimes "bad signal."</li>
+              <li>The map's accent color follows your current player level, so the journey shifts tone as you progress: silver → amber → violet → cyan → teal → red → steel → orange → neon → gold.</li>
+              <li>First time you nail 5/5 on a level, the cleared milestone celebrates with a star drop-bounce + shockwave.</li>
+              <li>Use <span class="kbd">Esc</span> to close any modal. <span class="kbd">Tab</span> traps work for keyboard navigation.</li>
+              <li>Want to re-roll the random style? Just refresh the page.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    `;
+    fxTransition();
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
    *  CODEX (bonus library)
    * ────────────────────────────────────────────────────────────── */
 
@@ -577,6 +671,7 @@ window.DG_APP = (function () {
 
     document.getElementById("btnHome").addEventListener("click", () => renderMap());
     document.getElementById("btnCodex").addEventListener("click", () => renderCodex());
+    document.getElementById("btnAbout").addEventListener("click", () => renderAbout());
     document.getElementById("btnCredits").addEventListener("click", () => renderCredits());
   }
 

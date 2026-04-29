@@ -76,6 +76,49 @@ body::before {
   transition: all var(--transition);
 }
 .hud__btn:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: var(--glow-cyan); }
+
+/* Brand button — replaces the "Home" icon, doubles as the back-to-map link. */
+.hud__brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 4px 12px 4px 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.hud__brand:hover {
+  background: var(--panel);
+  border-color: var(--line);
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.18);
+}
+.hud__logo {
+  width: 36px; height: 36px;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.45));
+}
+.hud__brand-name {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-size: 16px;
+  background: var(--grad-neon);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+}
+.hud__brand-name--accent {
+  background: linear-gradient(135deg, var(--cyan), var(--neon));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-left: 2px;
+  opacity: 0.85;
+}
+@media (max-width: 540px) {
+  .hud__brand-name { display: none; }
+  .hud__logo { width: 32px; height: 32px; }
+}
 .hud__stats { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .hud__chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -616,6 +659,94 @@ body::before {
   .score__stars { font-size: 38px; letter-spacing: 4px; }
   .score__points { font-size: 34px; }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ * ABOUT / GUIDE
+ * ────────────────────────────────────────────────────────────── */
+.about-hero {
+  text-align: center;
+  padding: 18px 8px 22px;
+  margin-bottom: 18px;
+  border-bottom: 1px dashed var(--line);
+}
+.about-hero__logo {
+  width: 96px; height: 96px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 6px 22px rgba(0,255,136,.38));
+}
+.about-hero__title {
+  font-size: clamp(26px, 5vw, 38px);
+  margin: 0 0 4px;
+  background: var(--grad-neon);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.about-hero__sub {
+  color: var(--text-dim);
+  font-style: italic;
+  margin: 0;
+  font-size: 14px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.about-card {
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  color: var(--text);
+}
+.about-card h2 {
+  font-size: 16px;
+  margin: 0 0 10px;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--cyan);
+}
+.about-card p {
+  color: var(--text-dim);
+  line-height: 1.55;
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+.about-card ul {
+  color: var(--text-dim);
+  padding-left: 18px;
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.about-card ul li { margin: 4px 0; }
+.about-card strong { color: var(--text); font-weight: 700; }
+.about-card code {
+  background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 4px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px;
+  color: var(--neon);
+}
+.about-card .kbd {
+  display: inline-block; padding: 1px 7px; min-width: 18px;
+  background: var(--bg-3); border: 1px solid var(--line);
+  border-radius: 6px; font-size: 12px; font-family: ui-monospace, monospace;
+  color: var(--text); text-align: center;
+}
+.about-card--score { border-left: 3px solid var(--neon); }
+.about-card--codex { border-left: 3px solid var(--cyan); }
+.about-card--privacy { border-left: 3px solid var(--gold); }
+
+.score-table {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.score-table > .key { color: var(--gold); font-weight: 700; }
+.score-table > .val { color: var(--text-dim); }
+.score-table > .pts { color: var(--neon); font-weight: 700; text-align: right; }
 
 /* ─────────────────────────────────────────────────────────────────
  * CODEX (bonus library)
