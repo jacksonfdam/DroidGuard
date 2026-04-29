@@ -65,6 +65,9 @@ body::before {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
+.hud__nav {
+  display: flex; gap: 8px; align-items: center;
+}
 .hud__btn {
   width: 42px; height: 42px;
   display: grid; place-items: center;
@@ -652,7 +655,35 @@ body::before {
 
 /* ── Responsive ── */
 @media (max-width: 540px) {
-  .hud__chip { padding: 5px 10px; font-size: 12px; }
+  /* HUD becomes a two-row grid:
+     row 1: brand on the left, nav buttons on the right
+     row 2: stats centered, full width
+     This keeps the chips inline (no vertical stacking) and the
+     buttons grouped on the right edge instead of spreading out. */
+  .hud {
+    flex-wrap: wrap;
+    padding: 10px 12px 8px;
+    gap: 8px;
+  }
+  .hud__stats {
+    order: 10;             /* push to last position = new row */
+    flex: 1 0 100%;        /* take full width, force wrap */
+    justify-content: center;
+    flex-wrap: nowrap;     /* keep chips inline */
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .hud__chip {
+    padding: 4px 9px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .hud__chip svg { width: 14px; height: 14px; }
+  .hud__btn  { width: 38px; height: 38px; }
+  .hud__nav  { gap: 6px; }
+  .hud__brand { padding: 2px 8px 2px 2px; }
+  .hud__logo { width: 30px; height: 30px; }
+
   .map-node { width: 64px; height: 64px; }
   .map-node .map-node__num { font-size: 18px; }
   .map-node .map-node__lbl { font-size: 13px; padding: 4px 10px; }
