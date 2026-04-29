@@ -955,6 +955,32 @@ window.DG_DATA = (function () {
         { label: "Vuldroid", url: "https://github.com/jaiswalakshansh/Vuldroid" },
         { label: "ovaa", url: "https://github.com/oversecured/ovaa" }
       ]
+    },
+    {
+      name: "Jackson Mafra — Codex sources",
+      desc: "Every book in the in-app Codex is a companion summary of one of these original articles or repos. Read the full pieces for the complete take.",
+      links: [
+        { label: "Overlay Attacks",       url: "https://medium.com/@jacksonfdam/android-overlay-attacks-how-they-work-and-how-to-stop-them-f3dbea3d215f" },
+        { label: "GhostTouch",            url: "https://github.com/jacksonmafra-umain/GhostTouch" },
+        { label: "Common Bypasses",       url: "https://medium.com/@jacksonfdam/hackers-gonna-hack-common-bypass-techniques-and-how-to-fight-back-43eb21e1c8f0" },
+        { label: "Mobile Top 10",         url: "https://medium.com/@jacksonfdam/so-your-mobile-app-is-a-security-dumpster-fire-owasp-mobile-top-10-for-normal-humans-ddf1ae85f61d" },
+        { label: "Bulletproof Security",  url: "https://medium.com/@jacksonfdam/building-a-bulletproof-security-system-combining-attestation-and-fingerprinting-2f4d65c02128" },
+        { label: "Fingerprinting (CSI)",  url: "https://medium.com/@jacksonfdam/fingerprinting-android-devices-like-csi-but-for-your-app-e99a1aeff248" },
+        { label: "Device Attestation 101", url: "https://medium.com/@jacksonfdam/device-attestation-101-making-sure-your-users-arent-evil-robots-75928cc1bd0c" },
+        { label: "Trust No One",          url: "https://medium.com/@jacksonfdam/trust-no-one-why-your-android-app-needs-to-verify-devices-1228f186a941" },
+        { label: "Attestation & FP Series", url: "https://medium.com/@jacksonfdam/android-security-series-device-attestation-and-fingerprinting-887aafde3e60" },
+        { label: "Privacy vs. Security",  url: "https://medium.com/@jacksonfdam/privacy-vs-security-walking-the-tightrope-of-user-trust-c29e69199191" },
+        { label: "Hackers Need Hobbies",  url: "https://medium.com/@jacksonfdam/mobile-security-because-hackers-need-hobbies-too-6b84b0ab52d8" },
+        { label: "Custom ROMs & Rooted",  url: "https://medium.com/@jacksonfdam/custom-roms-and-rooted-devices-the-security-wild-west-c5de72851582" },
+        { label: "Android Undercover",    url: "https://medium.com/@jacksonfdam/googles-android-goes-undercover-the-not-so-open-source-saga-626c30a7a507" },
+        { label: "Manufacturer's Dilemma", url: "https://medium.com/@jacksonfdam/the-manufacturers-dilemma-how-samsung-huawei-and-others-handle-security-c898bdc02775" },
+        { label: "Command-Line Tools",    url: "https://medium.com/@jacksonfdam/android-command-line-tools-a-guide-for-the-terminally-confused-d5367df1b3c6" },
+        { label: "Cuttlefish 🦑",          url: "https://medium.com/@jacksonfdam/cuttlefish-the-android-emulator-you-didnt-know-you-needed-94b86ccc23f3" },
+        { label: "AVD Deep Dive 🚀",       url: "https://medium.com/@jacksonfdam/exploring-android-virtual-devices-avds-more-than-just-emulators-d93a0450ce53" },
+        { label: "Automating Input",      url: "https://medium.com/@jacksonfdam/automating-input-events-on-android-a-comprehensive-guide-c2a1927217ce" },
+        { label: "Installer Source",      url: "https://medium.com/@jacksonfdam/enhancing-android-app-security-verifying-installer-source-and-more-466d9240a605" },
+        { label: "Hackdroid (lab)",       url: "https://github.com/jacksonfdam/hackdroid" }
+      ]
     }
   ];
 
