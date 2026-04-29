@@ -13,7 +13,7 @@
   "devDependencies": {
     "compression": "^1.7.4",
     "csso": "^5.0.5",
-    "express": "^4.19.2",
+    "express": "^5.2.1",
     "html-minifier-terser": "^7.2.0",
     "javascript-obfuscator": "^4.1.0",
     "terser": "^5.31.0"
