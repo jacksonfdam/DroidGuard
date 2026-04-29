@@ -39,11 +39,16 @@ const JS_FILES = [
   "js/markdown.js",
   "js/integrity.js",
   "js/state.js",
+  "js/achievements.js",
   "js/quiz.js",
   "js/fx.js",
   "js/map.js",
+  "js/splash.js",
   "js/app.js"
 ];
+
+/** Static files (not minified) copied verbatim from src/ to public/. */
+const COPY_ROOT_FILES = ["manifest.json", "sw.js"];
 /* api/ stays at the project root so Vercel auto-detects it as serverless
    functions; it is *not* copied into public/. The local Express server
    mounts it from the root path on its own. */
@@ -334,6 +339,11 @@ async function main() {
   reports.push(await buildHtml());
 
   for (const { src, dst } of COPY_DIRS) copyDir(src, dst);
+  // PWA manifest + service worker live at the public/ root.
+  for (const f of COPY_ROOT_FILES) {
+    const src = path.join(SRC, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT, f));
+  }
   // vercel.json hooks at the root, not inside public/, so we don't copy it.
 
   let srcSum = 0, outSum = 0;

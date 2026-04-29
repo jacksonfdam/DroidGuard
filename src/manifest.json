@@ -1,0 +1,21 @@
+{
+  "name": "DroidGuard Quest",
+  "short_name": "DroidGuard",
+  "description": "From vulnerability to fortress — your Android security journey, gamified.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0E27",
+  "theme_color": "#0A0E27",
+  "categories": ["education", "games"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
