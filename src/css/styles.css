@@ -203,25 +203,40 @@ body::before {
     0 0 1px rgba(0, 0, 0, 0.95);
 }
 .map-node .map-node__lbl {
-  position: absolute; left: 50%; top: calc(100% + 8px);
+  position: absolute; left: 50%; top: calc(100% + 10px);
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 12px; color: var(--text-dim);
+  font-size: 14px; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--text-dim);
   background: rgba(10,14,39,.92);
   border: 1px solid var(--line);
-  padding: 3px 8px; border-radius: 999px;
+  padding: 5px 12px; border-radius: 999px;
   z-index: 3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
+/* Stars sit on a five-point arc above the milestone instead of a flat row. */
 .map-node .map-node__stars {
-  position: absolute; left: 50%; top: -22px;
-  transform: translateX(-50%);
-  display: flex; gap: 2px;
-  font-size: 14px; color: var(--gold);
-  text-shadow: 0 0 6px rgba(255, 210, 74, 0.55), 0 1px 2px rgba(0,0,0,.7);
+  position: absolute; left: 50%; top: 50%;
+  width: 0; height: 0;
+  pointer-events: none;
   z-index: 3;
 }
-.map-node .map-node__stars .star { opacity: .22; }
+.map-node .map-node__stars .star {
+  position: absolute;
+  width: 14px; height: 14px;
+  display: grid; place-items: center;
+  font-size: 14px; line-height: 1;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(255, 210, 74, 0.55), 0 1px 2px rgba(0,0,0,.85);
+  opacity: .22;
+}
 .map-node .map-node__stars .star.on { opacity: 1; }
+/* Curve: 5 stars distributed across an 80° arc, each rotated to its tangent. */
+.map-node .map-node__stars .star:nth-child(1) { left: -36px; top: -34px; transform: translate(-50%, -50%) rotate(-32deg); }
+.map-node .map-node__stars .star:nth-child(2) { left: -19px; top: -45px; transform: translate(-50%, -50%) rotate(-16deg); }
+.map-node .map-node__stars .star:nth-child(3) { left:   0;   top: -49px; transform: translate(-50%, -50%); }
+.map-node .map-node__stars .star:nth-child(4) { left:  19px; top: -45px; transform: translate(-50%, -50%) rotate(16deg); }
+.map-node .map-node__stars .star:nth-child(5) { left:  36px; top: -34px; transform: translate(-50%, -50%) rotate(32deg); }
 
 /* ── Locked: visible but muted number, slightly faded plate ──── */
 .map-node.is-locked { cursor: not-allowed; }
@@ -527,7 +542,7 @@ body::before {
   .hud__chip { padding: 5px 10px; font-size: 12px; }
   .map-node { width: 64px; height: 64px; }
   .map-node .map-node__num { font-size: 18px; }
-  .map-node .map-node__lbl { font-size: 11px; padding: 2px 6px; }
+  .map-node .map-node__lbl { font-size: 13px; padding: 4px 10px; }
   .modal__panel { padding: 18px; border-radius: 18px; }
   .quiz__question { font-size: 16px; }
   .score__stars { font-size: 38px; letter-spacing: 4px; }
