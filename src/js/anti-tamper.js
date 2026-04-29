@@ -235,8 +235,13 @@
       veil = null;
     }
     if (PROD) {
-      window.addEventListener("blur", showVeil, true);
-      window.addEventListener("focus", hideVeil, true);
+      // Only react to actual page-hidden events. Mobile browsers fire
+      // window.blur on perfectly normal interactions (address bar UI,
+      // tap-to-focus inputs, soft keyboard, modals, scroll-driven URL
+      // bar collapse), so listening to blur produces too many false
+      // 'paused — tap to resume' overlays. visibilitychange:hidden is
+      // the precise 'tab/app went to background' signal we actually
+      // want for screenshot deterrence.
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "hidden") showVeil();
         else hideVeil();

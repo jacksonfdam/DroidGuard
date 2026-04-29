@@ -97,8 +97,20 @@ window.DG_ACHIEVEMENTS = (function () {
   }
 
   /* ── Notification toast ─────────────────────────────────────────── */
+  function getStack() {
+    let s = document.getElementById("dgAchStack");
+    if (!s && document.body) {
+      s = document.createElement("div");
+      s.id = "dgAchStack";
+      s.className = "ach-stack";
+      document.body.appendChild(s);
+    }
+    return s;
+  }
+
   function notify(ach) {
-    if (!document.body) return;
+    const stack = getStack();
+    if (!stack) return;
     const t = document.createElement("div");
     t.className = "ach-toast";
     t.innerHTML =
@@ -108,10 +120,18 @@ window.DG_ACHIEVEMENTS = (function () {
         '<div class="ach-toast__title">' + ach.title + '</div>' +
         '<div class="ach-toast__desc">' + ach.desc + '</div>' +
       '</div>';
-    document.body.appendChild(t);
+    // Tap to dismiss before the auto-timer.
+    t.addEventListener("click", () => fadeOut(t));
+    stack.appendChild(t);
     requestAnimationFrame(() => t.classList.add("is-shown"));
-    setTimeout(() => t.classList.remove("is-shown"), 4600);
-    setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 5100);
+    setTimeout(() => fadeOut(t), 4800);
+  }
+
+  function fadeOut(t) {
+    if (!t || t.dataset.dgGone) return;
+    t.dataset.dgGone = "1";
+    t.classList.remove("is-shown");
+    setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 380);
   }
 
   /* ── Check + record ─────────────────────────────────────────────── */
