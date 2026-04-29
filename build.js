@@ -18,10 +18,15 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { minify: terserMinify } = require("terser");
 const JsObfuscator = require("javascript-obfuscator");
 const { minify: htmlMinify } = require("html-minifier-terser");
 const csso = require("csso");
+
+function shortHash(buf) {
+  return crypto.createHash("md5").update(buf).digest("hex").slice(0, 8);
+}
 
 const ROOT = __dirname;
 const SRC = path.join(ROOT, "src");
@@ -48,7 +53,9 @@ const COPY_DIRS = [
 
 const SKIP_NAMES = new Set([".DS_Store", "Thumbs.db"]);
 
-/** Heavy obfuscation profile — used for files that hold answer keys. */
+/** Heavy obfuscation profile — used for files that hold answer keys.
+ *  seed pinned so the same source produces the same output across runs;
+ *  cache-busting hashes only change when the source changes. */
 const OBF_HEAVY = {
   compact: true,
   controlFlowFlattening: true,
@@ -64,7 +71,8 @@ const OBF_HEAVY = {
   identifierNamesGenerator: "mangled-shuffled",
   selfDefending: true,
   transformObjectKeys: true,
-  unicodeEscapeSequence: false
+  unicodeEscapeSequence: false,
+  seed: 0xD60D
 };
 
 /** Light obfuscation for the rest — keeps things small and fast. */
@@ -75,7 +83,8 @@ const OBF_LIGHT = {
   stringArrayEncoding: ["none"],
   stringArrayThreshold: 0.6,
   identifierNamesGenerator: "mangled",
-  unicodeEscapeSequence: false
+  unicodeEscapeSequence: false,
+  seed: 0xD60D
 };
 
 const HEAVY_TARGETS = new Set(["js/data.js", "js/library.js", "js/integrity.js", "js/state.js", "js/quiz.js"]);
@@ -249,6 +258,22 @@ async function buildJs(rel) {
 async function buildHtml() {
   let src = fs.readFileSync(path.join(SRC, "index.html"), "utf8");
   src = renameHtmlAttrs(src, RENAME_MAP);
+  // Append a content-hash query string to every JS/CSS reference so the
+  // 1-year immutable cache header in vercel.json stays correct: identical
+  // content keeps its cached entry, modified content gets a new URL the
+  // browser must fetch.
+  src = src.replace(/(<script\s+src=["'])(js\/[^"']+\.js)(["'])/g, (m, a, file, b) => {
+    try {
+      const h = shortHash(fs.readFileSync(path.join(OUT, file)));
+      return a + file + "?v=" + h + b;
+    } catch (_) { return m; }
+  });
+  src = src.replace(/(<link\s+[^>]*href=["'])(css\/[^"']+\.css)(["'])/g, (m, a, file, b) => {
+    try {
+      const h = shortHash(fs.readFileSync(path.join(OUT, file)));
+      return a + file + "?v=" + h + b;
+    } catch (_) { return m; }
+  });
   const min = await htmlMinify(src, {
     collapseWhitespace: true,
     collapseInlineTagWhitespace: true,
