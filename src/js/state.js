@@ -16,7 +16,8 @@ window.DG_STATE = (function () {
     codex: {                   // Bonus-quest reading library state
       chaptersRead: {},        // { [bookId]: [chapterIndex, ...] }
       booksCompleted: {}       // { [bookId]: timestamp }
-    }
+    },
+    achievements: {}           // { [achievementId]: timestamp }
   };
 
   function fresh() {
@@ -24,7 +25,8 @@ window.DG_STATE = (function () {
       level: 1, xp: 0,
       completedLevels: {},
       streakPerfect: 0,
-      codex: { chaptersRead: {}, booksCompleted: {} }
+      codex: { chaptersRead: {}, booksCompleted: {} },
+      achievements: {}
     };
   }
 
@@ -48,7 +50,9 @@ window.DG_STATE = (function () {
               chaptersRead:    parsed.codex.chaptersRead    || {},
               booksCompleted:  parsed.codex.booksCompleted  || {}
             }
-          : { chaptersRead: {}, booksCompleted: {} }
+          : { chaptersRead: {}, booksCompleted: {} },
+        achievements: (parsed.achievements && typeof parsed.achievements === "object")
+          ? parsed.achievements : {}
       };
     } catch (e) {
       return fresh();
@@ -193,10 +197,25 @@ window.DG_STATE = (function () {
     return out;
   }
 
+  /* ── Achievements ──────────────────────────────────────────────── */
+  function isAchievementUnlocked(id) {
+    return !!(state.achievements && state.achievements[id]);
+  }
+  function unlockAchievement(id) {
+    if (!state.achievements) state.achievements = {};
+    if (state.achievements[id]) return false;
+    state.achievements[id] = Date.now();
+    save(state);
+    return true;
+  }
+  /** Save the current state without mutating anything else. */
+  function persist() { save(state); }
+
   return {
     get, reset, isUnlocked, isCompleted, recordResult,
     getLevelRecord, totalStars,
     isChapterRead, isBookCompleted, chaptersReadCount,
-    recordChapterRead, totalCodexXp, readingHistory
+    recordChapterRead, totalCodexXp, readingHistory,
+    isAchievementUnlocked, unlockAchievement, persist
   };
 })();

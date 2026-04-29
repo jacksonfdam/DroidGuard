@@ -266,6 +266,7 @@ window.DG_APP = (function () {
       if (correctCount === total && window.DG_MAP && DG_MAP.markCelebrate) {
         DG_MAP.markCelebrate(level.id);
       }
+      if (window.DG_ACHIEVEMENTS) DG_ACHIEVEMENTS.check();
 
       view.innerHTML = `
         <section class="section score">
@@ -618,6 +619,7 @@ window.DG_APP = (function () {
       if (already) { closeModal(); return; }
       const result = DG_STATE.recordChapterRead(book.id, idx);
       refreshHud();
+      if (window.DG_ACHIEVEMENTS) DG_ACHIEVEMENTS.check();
       const nextIdx = idx + 1;
       if (result.bookCompleted) {
         toast(`📚 Book completed: ${book.title} · +${result.xpGain} XP`, "success");

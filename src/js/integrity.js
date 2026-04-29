@@ -102,6 +102,14 @@ window.DG_INTEGRITY = (function () {
         }
       }
     }
+    // Achievements bag — { [id]: timestamp }, optional
+    if (state.achievements !== undefined) {
+      if (typeof state.achievements !== "object" || state.achievements === null) return false;
+      for (const k of Object.keys(state.achievements)) {
+        const t = state.achievements[k];
+        if (typeof t !== "number" || t < 0 || !Number.isFinite(t)) return false;
+      }
+    }
     return true;
   }
 
