@@ -39,9 +39,11 @@ const JS_FILES = [
   "js/map.js",
   "js/app.js"
 ];
+/* api/ stays at the project root so Vercel auto-detects it as serverless
+   functions; it is *not* copied into public/. The local Express server
+   mounts it from the root path on its own. */
 const COPY_DIRS = [
-  { src: path.join(SRC, "assets"), dst: path.join(OUT, "assets") },
-  { src: path.join(ROOT, "api"),   dst: path.join(OUT, "api") }
+  { src: path.join(SRC, "assets"), dst: path.join(OUT, "assets") }
 ];
 
 const SKIP_NAMES = new Set([".DS_Store", "Thumbs.db"]);

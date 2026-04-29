@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "From vulnerability to fortress — your Android security journey, gamified.",
-  "main": "server.js",
   "scripts": {
     "build": "node build.js",
     "start": "node server.js",
@@ -11,12 +10,10 @@
     "preview": "node server.js",
     "clean": "rm -rf public"
   },
-  "dependencies": {
-    "compression": "^1.7.4",
-    "express": "^4.19.2"
-  },
   "devDependencies": {
+    "compression": "^1.7.4",
     "csso": "^5.0.5",
+    "express": "^4.19.2",
     "html-minifier-terser": "^7.2.0",
     "javascript-obfuscator": "^4.1.0",
     "terser": "^5.31.0"

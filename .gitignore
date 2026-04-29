@@ -6,3 +6,5 @@ public/
 .env
 .env.local
 /.idea/
+.vercel
+.env*.local
