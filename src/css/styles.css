@@ -694,6 +694,157 @@ body::before {
 }
 
 /* ─────────────────────────────────────────────────────────────────
+ * SPLASH (intro overlay) + Add-to-Home hint
+ * ────────────────────────────────────────────────────────────── */
+.splash {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px;
+  padding: 32px 24px;
+  background:
+    radial-gradient(700px 500px at 50% 35%, rgba(0,255,136,.10), transparent 65%),
+    radial-gradient(900px 700px at 50% 110%, rgba(0,212,255,.10), transparent 60%),
+    var(--bg);
+  cursor: pointer;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .42s ease;
+}
+.splash.is-shown   { opacity: 1; }
+.splash.is-leaving { opacity: 0; pointer-events: none; }
+.splash__logo {
+  width: 96px; height: 96px;
+  filter: drop-shadow(0 6px 26px rgba(0,255,136,.45));
+  animation: splashPop .6s cubic-bezier(.34, 1.56, .64, 1) 1 both;
+}
+@keyframes splashPop {
+  0%   { transform: scale(.65) rotate(-6deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.splash__title {
+  font-size: clamp(28px, 5.5vw, 42px);
+  margin: 4px 0 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background-image: var(--grad-neon);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+}
+.splash__title span {
+  background-image: linear-gradient(135deg, var(--cyan), var(--neon));
+  -webkit-background-clip: text;
+  background-clip: text;
+  margin-left: 6px;
+  opacity: 0.85;
+}
+.splash__sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-style: italic;
+  max-width: 480px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.splash__cta {
+  margin-top: 14px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background-image: var(--grad-neon);
+  color: #0A0E27;
+  font-weight: 800;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.splash__cta:hover { transform: translateY(-1px); box-shadow: var(--glow-neon); }
+.splash__hint {
+  margin: 18px 0 0;
+  color: var(--text-mute);
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  animation: splashBlink 1.8s steps(20) infinite;
+}
+@keyframes splashBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* iOS Add-to-Home hint shown when there's no native install prompt. */
+.splash__ioshint {
+  position: fixed; left: 50%; bottom: 28px;
+  transform: translate(-50%, 30px);
+  background: var(--panel-2);
+  border: 1px solid var(--cyan);
+  color: var(--text);
+  padding: 14px 18px; border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 18px rgba(0,212,255,.35);
+  font-size: 13px; line-height: 1.5;
+  max-width: min(420px, calc(100% - 32px));
+  text-align: center;
+  opacity: 0; pointer-events: none;
+  transition: all .35s ease;
+  z-index: 100000;
+}
+.splash__ioshint.is-shown { opacity: 1; transform: translate(-50%, 0); }
+
+/* ─────────────────────────────────────────────────────────────────
+ * ACHIEVEMENT TOAST (notification when an achievement unlocks)
+ * ────────────────────────────────────────────────────────────── */
+.ach-toast {
+  position: fixed;
+  right: 18px; bottom: 18px;
+  z-index: 99998;
+  display: flex; gap: 12px; align-items: center;
+  padding: 14px 18px 14px 14px;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  box-shadow: 0 16px 32px rgba(0,0,0,.55), 0 0 18px rgba(255,210,74,.25);
+  color: var(--text);
+  max-width: min(380px, calc(100vw - 36px));
+  transform: translate(0, 30px);
+  opacity: 0;
+  transition: opacity .35s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1);
+}
+.ach-toast.is-shown { opacity: 1; transform: translate(0, 0); }
+.ach-toast__icon {
+  flex: 0 0 50px; height: 50px;
+  display: grid; place-items: center;
+  border-radius: 14px;
+  background: rgba(255,210,74,.16);
+  border: 1px solid rgba(255,210,74,.4);
+  font-size: 28px; line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(255,210,74,.45));
+}
+.ach-toast__body { flex: 1; min-width: 0; }
+.ach-toast__small {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.ach-toast__title {
+  font-size: 16px; font-weight: 800;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.ach-toast__desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+@media (max-width: 540px) {
+  .ach-toast {
+    right: 12px; left: 12px; bottom: 12px;
+    max-width: none;
+  }
+  .splash__title { font-size: clamp(24px, 7vw, 32px); }
+  .splash__logo  { width: 76px; height: 76px; }
+}
+
+/* ─────────────────────────────────────────────────────────────────
  * ABOUT / GUIDE
  * ────────────────────────────────────────────────────────────── */
 .about-hero {
