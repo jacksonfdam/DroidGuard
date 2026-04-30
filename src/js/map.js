@@ -8,17 +8,21 @@
  */
 window.DG_MAP = (function () {
   // Relative coordinates (0..100) for 10 nodes — match every SVG's viewBox.
+  // Level 1 sits at the top so the player starts in view (Duolingo-style)
+  // and progresses downward. The path SVGs are flipped at render time via a
+  // CSS scaleY(-1) on .path-art svg so the artwork follows the new order
+  // without having to rewrite each SVG file.
   const NODES = [
-    { x: 20, y: 96 },
-    { x: 50, y: 88 },
-    { x: 78, y: 80 },
-    { x: 56, y: 70 },
-    { x: 24, y: 62 },
-    { x: 50, y: 53 },
-    { x: 78, y: 44 },
-    { x: 50, y: 33 },
-    { x: 22, y: 24 },
-    { x: 50, y: 12 }
+    { x: 20, y: 4 },
+    { x: 50, y: 12 },
+    { x: 78, y: 20 },
+    { x: 56, y: 30 },
+    { x: 24, y: 38 },
+    { x: 50, y: 47 },
+    { x: 78, y: 56 },
+    { x: 50, y: 67 },
+    { x: 22, y: 76 },
+    { x: 50, y: 88 }
   ];
 
   // The three favorite styles.
