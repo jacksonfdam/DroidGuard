@@ -34,6 +34,7 @@ const OUT = path.join(ROOT, "public");
 
 const JS_FILES = [
   "js/anti-tamper.js",
+  "js/analytics.js",
   "js/data.js",
   "js/library.js",
   "js/markdown.js",
